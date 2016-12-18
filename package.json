@@ -1,0 +1,11 @@
+{
+  "name": "sat-whale",
+  "version": "0.0.1",
+  "description": "Satelite equipment controller for IRDs, stearable controllers, LBand routers etc",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Andrew Moore",
+  "license": "ISC"
+}
