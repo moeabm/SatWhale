@@ -1,0 +1,30 @@
+{
+    "config": {
+        "devices": [
+            {
+                 "name": "REM_61",
+                 "type": "IRD8200",
+                 "address": "192.168.50.154",
+                 "color": "aaafff"
+            },
+            {
+                 "name": "REM_62",
+                 "type": "IRD8200",
+                 "address": "192.168.50.155",
+                 "color": "aaafff"
+            },
+            {
+                 "name": "REM_63",
+                 "type": "IRD8200",
+                 "address": "192.168.50.156",
+                 "color": "aaafff"
+            },
+            {
+                 "name": "REM_64",
+                 "type": "IRD8200",
+                 "address": "192.168.50.157",
+                 "color": "aaafff"
+            }
+        ]
+    }
+}
