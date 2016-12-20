@@ -63,7 +63,8 @@ var AUTO = 4;
 var ird8200 = function (addr, clr) {
     //variables that are not accessible outside this scope
     var session = new snmp.Session({
-            host: addr
+            host: addr,
+            community: "private"
         })
 
     return {
@@ -77,7 +78,7 @@ var ird8200 = function (addr, clr) {
         port: null,
         freq: null,
         loFreq: null,
-        smyRate: null,
+        symRate: null,
         modulation: null,
 
         //public functions
@@ -99,17 +100,17 @@ var ird8200 = function (addr, clr) {
             });
             this.getInput(function(device){
                 if(this_device.input == SAT){
-                    this.getPort(function(device){
-                        this_device.getSatFreq(device.port, function(device){
+                    this_device.getPort(function(device){
+                        this_device.getSatFreq(this_device.port, function(device){
                           finished();
                         });
-                        this_device.getLOFreq(device.port, function(device){
+                        this_device.getLOFreq(this_device.port, function(device){
                           finished();
                         });
-                        this_device.getSymRate(device.port, function(device){
+                        this_device.getSymRate(this_device.port, function(device){
                           finished();
                         });
-                        this_device.getModulation(device.port, function(device){
+                        this_device.getModulation(this_device.port, function(device){
                           finished();
                         });
                     });
@@ -121,6 +122,25 @@ var ird8200 = function (addr, clr) {
                     finished();
                 }
             });
+            function doCallback(){
+              cb(this_device);
+            }
+        },
+
+        updateStatus: function(newData, cb){
+            var finished = _.after(2, doCallback);
+            var this_device = this;
+
+            if(newData.input != this_device.input){
+                this.setInput(newData.input, finished);
+            }
+            else finished();
+
+            if(newData.port != this_device.port){
+                this.setPort(newData.port, finished);
+            }
+            else finished();
+
             function doCallback(){
               cb(this_device);
             }
@@ -187,18 +207,19 @@ var ird8200 = function (addr, clr) {
             var device = this;
             session.set({
                 oid: oid,
-                value: port,
+                value: (port - 1),
                 type: INTEGER
             }, function (error, varbinds) {
                 if (error) {
                     console.log(oid + ': ' + error);
                 } else {
+                    device.port = varbinds[0].value + 1;
                     console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                 }
             });
         },
         getPort: function ( callback) {
-            var oid = ".1.3.6.1.4.1.1773.1.3.208.2.1.4.0";
+            var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.1.0";
             var device = this;
             session.get({
                 oid: oid
@@ -206,7 +227,7 @@ var ird8200 = function (addr, clr) {
                 if (error) {
                     console.log(oid + ': ' + error);
                 } else {
-                    device.port = varbinds[0].value;
+                    device.port = varbinds[0].value + 1;
                     callback(varbinds);
                     console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                 }
@@ -215,6 +236,7 @@ var ird8200 = function (addr, clr) {
         // INTEGER: 5150000 lnb lo freq
         setLOFreq: function (freq, port) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.2." + port;
+            var device = this;
             session.set({
                 oid: oid,
                 value: freq,
@@ -223,18 +245,21 @@ var ird8200 = function (addr, clr) {
                 if (error) {
                     console.log(oid + ': ' + error);
                 } else {
+                    device.loFreq = varbinds[0].value;
                     console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                 }
             });
         },
         getLOFreq: function (port, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.2." + port;
+            var device = this;
             session.get({
                 oid: oid
             }, function (error, varbinds) {
                 if (error) {
                     console.log(oid + ': ' + error);
                 } else {
+                    device.loFreq = varbinds[0].value;
                     console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                     callback(varbinds);
                 }
@@ -243,6 +268,7 @@ var ird8200 = function (addr, clr) {
         // INTEGER: 4080000 sat freq
         setSatFreq: function (freq, port) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.3." + port;
+            var device = this;
             session.set({
                 oid: oid,
                 value: freq,
@@ -251,18 +277,21 @@ var ird8200 = function (addr, clr) {
                 if (error) {
                     console.log(oid + ': ' + error);
                 } else {
+                    device.freq = varbinds[0].value;
                     console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                 }
             });
         },
         getSatFreq: function (port, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.3." + port;
+            var device = this;
             session.get({
                 oid: oid
             }, function (error, varbinds) {
                 if (error) {
                     console.log(oid + ': ' + error);
                 } else {
+                    device.freq = varbinds[0].value;
                     callback(varbinds);
                     console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                 }
@@ -271,6 +300,7 @@ var ird8200 = function (addr, clr) {
         // INTEGER: 27780000 symbol rate
         setSymRate: function (rate, port) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.4." + port;
+            var device = this;
             session.set({
                 oid: oid,
                 value: rate,
@@ -279,18 +309,21 @@ var ird8200 = function (addr, clr) {
                 if (error) {
                     console.log(oid + ': ' + error);
                 } else {
+                    device.symRate = varbinds[0].value;
                     console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                 }
             });
         },
         getSymRate: function (port, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.4." + port;
+            var device = this;
             session.get({
                 oid: oid
             }, function (error, varbinds) {
                 if (error) {
                     console.log(oid + ': ' + error);
                 } else {
+                    device.symRate = varbinds[0].value;
                     callback(varbinds);
                     console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                 }
@@ -299,6 +332,7 @@ var ird8200 = function (addr, clr) {
         // INTEGER: 0 Modulation 0=DVB-S 2=DVB-S2 or 8PSK 1=DVB-S2??
         setModulation: function (mod, port) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.5." + port;
+            var device = this;
             session.set({
                 oid: oid,
                 value: mod,
@@ -307,18 +341,21 @@ var ird8200 = function (addr, clr) {
                 if (error) {
                     console.log(oid + ': ' + error);
                 } else {
+                    device.modulation = varbinds[0].value;
                     console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                 }
             });
         },
         getModulation: function (port, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.5." + port;
+            var device = this;
             session.get({
                 oid: oid
             }, function (error, varbinds) {
                 if (error) {
                     console.log(oid + ': ' + error);
                 } else {
+                    device.modulation = varbinds[0].value;
                     callback(varbinds);
                     console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                 }
