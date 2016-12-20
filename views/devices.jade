@@ -1,0 +1,7 @@
+include devices/ird8200.jade
+mixin deviceLayout(device)
+    case device.type
+        when "ird8200"
+            +ird8200(device)
+        default
+            p #{JSON.stringify(device)}

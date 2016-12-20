@@ -1,0 +1,62 @@
+mixin ird8200(device)
+    div.panel_layout(id="panel_#{device.id}")
+        div.form-group
+            button.btn.col-xs-12.status #{device.name}
+            span.nopad.col-xs-6
+                select.input.form-control
+                    option(value="") Select Input
+                    option(value=0) ASI
+                    option(value=1) SAT
+                    option(value=3) IP
+                    option(value=4) AUTO
+            span.hideable.sat.nopad.col-xs-6
+                select.form-control
+                    option(value=0) Select Port
+                    option(value=1) 1
+                    option(value=2) 2
+                    option(value=3) 3
+                    option(value=4) 4
+        div.hideable.sat
+            div.row &nbsp;
+            div.row
+                label.col-xs-4.text-right.text-nowrap Sat Freq
+                span.nopad.col-xs-4
+                    input.form-control
+                label.col-xs-4 MHz
+            div.row
+                label.col-xs-4.text-right.text-nowrap Sym Rate
+                span.nopad.col-xs-4
+                    input.form-control
+                label.col-xs-4 MHz
+            div.row
+                label.col-xs-4.text-right.text-nowrap Modulation
+                div.col-xs-8
+                    .form-check
+                      label.form-check-label
+                        input.form-check-input(type='radio', name='modulation_#{device.id}', value='dvbs', checked)
+                        |     DVB-S
+                    .form-check
+                      label.form-check-label
+                        input.form-check-input(type='radio', name='modulation_#{device.id}', value='dvbs2')
+                        |     DVB-S2
+            div.row
+                label.col-xs-4.text-right.text-nowrap Service
+                span.nopad.col-xs-8
+                    select.form-control
+                        option(value=0) 
+            div.row
+                label.col-xs-4.text-right.text-nowrap Video
+                span.nopad.col-xs-8
+                    select.form-control
+                        option(value=0) 
+            div.row
+                label.col-xs-4.text-right.text-nowrap Audio
+                span.nopad.col-xs-8
+                    select.form-control
+                        option(value=0) 
+        div.hideable.ip
+            span.col-xs-6.filler
+            label.col-xs-4.text-right.text-nowrap Stream IP:
+            label.col-xs-8.text-nowrap 127.0.0.1
+            label.col-xs-4.text-right.text-nowrap Port:
+            label.col-xs-8.text-nowrap 10041
