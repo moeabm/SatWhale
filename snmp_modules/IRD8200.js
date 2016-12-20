@@ -41,6 +41,11 @@ var NO_SUCH_INSTANCE = 129;
 var END_OF_MIB_VIEW = 130;
 var PDU = 320;
 
+var ASI = 0;
+var SAT = 1;
+var IP = 3;
+var AUTO = 4;
+
 // String oidGetLocked = ".1.3.6.1.4.1.1773.1.3.208.2.2.2.0";         //  1 get LOCKED
 // String oidGetPower = ".1.3.6.1.4.1.1773.1.3.208.2.2.3.0";         //  2 get POWER
 //
@@ -68,6 +73,8 @@ var ird8200 = function (addr, clr) {
         type: "ird8200",
         lock: false,
         address: addr,
+        input: null, //Syntax	 INTEGER32 {asi(0), sat_vsb(1),st_input(2), ip(3),auto(4)}
+        port: null,
         freq: null,
         loFreq: null,
         smyRate: null,
@@ -90,19 +97,29 @@ var ird8200 = function (addr, clr) {
             this.getLock(function(device){
               finished();
             });
-            this.getPort(function(device){
-                this_device.getSatFreq(device.port, function(device){
-                  finished();
-                });
-                this_device.getLOFreq(device.port, function(device){
-                  finished();
-                });
-                this_device.getSymRate(device.port, function(device){
-                  finished();
-                });
-                this_device.getModulation(device.port, function(device){
-                  finished();
-                });
+            this.getInput(function(device){
+                if(this_device.input == SAT){
+                    this.getPort(function(device){
+                        this_device.getSatFreq(device.port, function(device){
+                          finished();
+                        });
+                        this_device.getLOFreq(device.port, function(device){
+                          finished();
+                        });
+                        this_device.getSymRate(device.port, function(device){
+                          finished();
+                        });
+                        this_device.getModulation(device.port, function(device){
+                          finished();
+                        });
+                    });
+                }
+                else{
+                    finished();
+                    finished();
+                    finished();
+                    finished();
+                }
             });
             function doCallback(){
               cb(this_device);
@@ -121,7 +138,7 @@ var ird8200 = function (addr, clr) {
                     console.log(oid + ': ' + error);
                     callback();
                 } else {
-                    console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
+                    // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                     if(varbinds[0].type == OCTETSTRING && varbinds[0].value == "LOCKED" ){
                         device.lock = true;
                     }
@@ -133,8 +150,41 @@ var ird8200 = function (addr, clr) {
             });
         },
         // interger: 1-4 input port source
+        setInput: function (input) {
+            var oid = ".1.3.6.1.4.1.1773.1.3.208.2.1.2.0";
+            var device = this;
+            session.set({
+                oid: oid,
+                value: input,
+                type: INTEGER
+            }, function (error, varbinds) {
+                if (error) {
+                    console.log(oid + ': ' + error);
+                } else {
+                    device.input = input;
+                    console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
+                }
+            });
+        },
+        getInput: function (callback) {
+            var oid = ".1.3.6.1.4.1.1773.1.3.208.2.1.2.0";
+            var device = this;
+            session.get({
+                oid: oid
+            }, function (error, varbinds) {
+                if (error) {
+                    console.log(oid + ': ' + error);
+                } else {
+                    device.input = varbinds[0].value;
+                    callback(varbinds);
+                    // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
+                }
+            });
+        },
+        // interger: 1-4 input port source
         setPort: function (port) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.1.4.0";
+            var device = this;
             session.set({
                 oid: oid,
                 value: port,
@@ -149,12 +199,14 @@ var ird8200 = function (addr, clr) {
         },
         getPort: function ( callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.1.4.0";
+            var device = this;
             session.get({
                 oid: oid
             }, function (error, varbinds) {
                 if (error) {
                     console.log(oid + ': ' + error);
                 } else {
+                    device.port = varbinds[0].value;
                     callback(varbinds);
                     console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                 }
