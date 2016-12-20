@@ -1,4 +1,3 @@
-var bootstrapService = require("express-bootstrap-service");
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
@@ -33,7 +32,6 @@ for (i = 0; i < config.devices.length; i++) {
 app.set('devices', devices);
 
 // view engine setup
-app.use(bootstrapService.serve);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
