@@ -18,13 +18,21 @@ router.get('/:id', function(req, res, next) {
 router.post('/:id', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id]
     var updatedDevice = req.body
-    console.log(updatedDevice);
     device.updateStatus(updatedDevice,
         function(updated){
             res.send(updated);
         }
     )
+});
 
+
+router.get('/:id/services', function(req, res, next) {
+    var device = req.app.get('devices')[req.params.id];
+    device.getServiceArray(function(services){
+        device.getService(function(currentService){
+            res.send({services: services, selected: currentService});
+        });
+    });
 });
 
 

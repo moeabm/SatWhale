@@ -21,39 +21,44 @@ mixin ird8200(device)
             div.row
                 label.col-xs-4.text-right.text-nowrap Sat Freq
                 span.nopad.col-xs-4
-                    input.form-control
+                    input.form-control.satFreq
                 label.col-xs-4 MHz
             div.row
                 label.col-xs-4.text-right.text-nowrap Sym Rate
                 span.nopad.col-xs-4
-                    input.form-control
-                label.col-xs-4 MHz
+                    input.form-control.symRate
+                label.col-xs-4 Msym/s
             div.row
                 label.col-xs-4.text-right.text-nowrap Modulation
-                div.col-xs-8
+                div.col-xs-4
                     .form-check
                       label.form-check-label
-                        input.form-check-input(type='radio', name='modulation_#{device.id}', value='dvbs', checked)
+                        input.form-check-input.modulation(type='radio', name='modulation_#{device.id}', value=0, checked)
                         |     DVB-S
                     .form-check
                       label.form-check-label
-                        input.form-check-input(type='radio', name='modulation_#{device.id}', value='dvbs2')
+                        input.form-check-input.modulation(type='radio', name='modulation_#{device.id}', value=2)
                         |     DVB-S2
+                div.col-xs-4
+                    .form-check
+                      label.form-check-label
+                        input.form-check-input.modulation(type='radio', name='modulation_#{device.id}', value=3)
+                        |     AUTO
             div.row
                 label.col-xs-4.text-right.text-nowrap Service
                 span.nopad.col-xs-8
-                    select.form-control
-                        option(value=0) 
-            div.row
-                label.col-xs-4.text-right.text-nowrap Video
-                span.nopad.col-xs-8
-                    select.form-control
-                        option(value=0) 
-            div.row
-                label.col-xs-4.text-right.text-nowrap Audio
-                span.nopad.col-xs-8
-                    select.form-control
-                        option(value=0) 
+                    select.form-control.service
+                        option
+            //- div.row
+            //-     label.col-xs-4.text-right.text-nowrap Video
+            //-     span.nopad.col-xs-8
+            //-         select.form-control.videoPid
+            //-             option 
+            //- div.row
+            //-     label.col-xs-4.text-right.text-nowrap Audio
+            //-     span.nopad.col-xs-8
+            //-         select.form-control.audioPid
+            //-             option
         div.hideable.ip
             span.col-xs-6.filler
             label.col-xs-4.text-right.text-nowrap Stream IP:
