@@ -1,3 +1,15 @@
+var socket = io('http://localhost:3000');
+socket.on('connect', function(){
+    console.log("connected");
+    
+});
+socket.on('device', function(data){
+    console.log(data);
+    var panel = $("#panel_"+data.id);
+    panel.find(".status").click();
+});
+socket.on('disconnect', function(){});
+
 function fillPanel(panel, data){
     if(panel.find(".input").val() != data.input)
         panel.find(".input").val(data.input).change();
@@ -35,6 +47,7 @@ $('.status').on('click', function (e) {
         if(json.lock == true){
             this_button.addClass("btn-success");
             $.getJSON("/ird8200s/"+id+"/services", function(json) {
+                panel.find('.service').find('option').remove().end().append('<option></option>');
                 $.each(json.services, function (i, item) {
                     panel.find('.service').append($('<option>', { 
                         value: i,
@@ -54,6 +67,8 @@ $('.status').on('click', function (e) {
         // console.log( "second success" );
     })
     .fail(function() {
+        this_button.removeClass("btn-success");
+        this_button.removeClass("btn-danger");
         this_button.html(this_button.html().replace("(NO COMM)", "") + "(NO COMM)")
         // console.log( "error" );
     })
@@ -81,7 +96,7 @@ $('.input').on('change', function (e) {
     }
 
     $.post("/ird8200s/"+id, device, function(json) {
-        fillPanel(panel, json);
+        // fillPanel(panel, json);
         // console.log(json)
     }, "json");
 });
@@ -105,7 +120,7 @@ $('.port').on('change', function (e) {
     }
 
     $.post("/ird8200s/"+id, device, function(json) {
-        fillPanel(panel, json);
+        // fillPanel(panel, json);
         // console.log(json)
     }, "json");
 });
@@ -126,7 +141,7 @@ $('.satFreq').on('blur', function (e) {
     }
 
     $.post("/ird8200s/"+id, device, function(json) {
-        fillPanel(panel, json);
+        // fillPanel(panel, json);
     }, "json");
 });
 
@@ -146,7 +161,7 @@ $('.symRate').on('blur', function (e) {
     }
 
     $.post("/ird8200s/"+id, device, function(json) {
-        fillPanel(panel, json);
+        // fillPanel(panel, json);
     }, "json");
 });
 
@@ -167,6 +182,8 @@ $('input.modulation[type=radio]').on('change', function (e) {
     }
 
     $.post("/ird8200s/"+id, device, function(json) {
-        fillPanel(panel, json);
+        // fillPanel(panel, json);
     }, "json");
 });
+
+$('.status').click();
