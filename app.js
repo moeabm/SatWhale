@@ -10,6 +10,10 @@ var users = require('./routes/users');
 var ird8200 = require('./routes/devices/ird8200');
 
 var app = express();
+var server = require('http').createServer(app);
+var io = require('socket.io')(server);
+app.io = io;
+io.on('connection', function(){ console.log("new connection") });
 
 var config = require('./config.json').config;
 var devices = {};
