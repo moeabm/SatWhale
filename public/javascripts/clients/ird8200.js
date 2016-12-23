@@ -1,16 +1,32 @@
-var socket = io('http://localhost:3000');
+var socket = io('http://10.40.10.67:3000');
 socket.on('connect', function(){
-    console.log("connected");
-    
+    console.log("connected to socket io");
 });
-socket.on('device', function(data){
-    console.log(data);
-    var panel = $("#panel_"+data.id);
-    panel.find(".status").click();
+socket.on('ird8200', function(data){
+    console.log("got updated ird8200 id: "+ data.id);
+    $.each(panels, function(index, panel){
+        var panels_with_device = $.grep(panel.devices, function(device){ return device.id == data.id; });
+        if(panels_with_device.length > 0){
+            var panel_layout = $("#panel_"+panel.id);
+            fillPanel(panel_layout, data)
+        }
+    })
 });
-socket.on('disconnect', function(){});
+socket.on('disconnect', function(){
+    console.log("disconnected from socket io");
+});
 
 function fillPanel(panel, data){
+    if(data.lock == true){
+        panel.find(".status").addClass("btn-success");
+        panel.find(".status").removeClass("btn-danger");
+        getAndFillServices(panel, data.id);
+    }
+    else{
+        panel.find(".status").addClass("btn-danger");
+        panel.find(".status").removeClass("btn-success");
+        panel.find('.service').find('option').remove().end().append('<option></option>');
+    }
     if(panel.find(".input").val() != data.input)
         panel.find(".input").val(data.input).change();
     if(panel.find(".port").val() != data.port)
@@ -25,165 +41,108 @@ function fillPanel(panel, data){
         panel.find(".modulation").filter("[value="+data.modulation+"]").prop('checked', true);
 }
 
-$('.status').on('click', function (e) {
-    var this_button = $(this);
-    this_button.removeClass("btn-success");
-    this_button.removeClass("btn-danger");
+function getAndFillServices(panel, id){
+    $.getJSON("/ird8200s/"+id+"/services", function(json) {
+        panel.find('.service').find('option').remove().end().append('<option></option>');
+        $.each(json.services, function (i, item) {
+            panel.find('.service').append($('<option>', { 
+                value: i,
+                text : item.value 
+            }));
+        });
+        panel.find('.service').val(json.selected);
+    });
+}
+
+function getPanelID(panel_layout){
+
     try{
-        var id = parseInt($(this).closest(".panel_layout").attr('id').replace("panel_", "") );
+        var id = parseInt(panel_layout.attr('id').replace("panel_", "") );
         if(isNaN(id)) throw new Error("bad_id");
-        // console.log(id);
+        return id;
     }
     catch(error){
-        console.error($(this).closest(".panel_layout").attr('id') + " does not have the proper id syntax 'panel_<id>'");
-        return;
+        console.error(panel_layout.attr('id') + " does not have the proper id syntax 'panel_<id>'");
+        return -1;
     }
-    $.getJSON("/ird8200s/"+id, null, function(json) {
-        console.log(json);
-        var panel = this_button.closest(".panel_layout");
-        panel.data("device", json);
-        this_button.html(this_button.html().replace("(NO COMM)", "") );
+}
 
-        if(json.lock == true){
-            this_button.addClass("btn-success");
-            $.getJSON("/ird8200s/"+id+"/services", function(json) {
-                panel.find('.service').find('option').remove().end().append('<option></option>');
-                $.each(json.services, function (i, item) {
-                    panel.find('.service').append($('<option>', { 
-                        value: i,
-                        text : item.value 
-                    }));
-                });
-                panel.find('.service').val(json.selected);
-            });
-        }
-        else{
-            this_button.addClass("btn-danger");
-            panel.find('.service').find('option').remove().end().append('<option></option>');
-        }
-        fillPanel(panel, json);
+$('.status').on('click', function (e) {
+    var this_button = $(this);
+    var id = getPanelID($(this).closest(".panel_layout"));
+    if(id < 0) return; // exit if panel id not found
+
+    $.each(panels[id].devices, function(k, v){
+        $.getJSON("/ird8200s/"+v.id, null, function(json) {
+            var panel = this_button.closest(".panel_layout");
+            //update panel data
+            panels[id].devices[0] = json;
+            //clear no comm
+            this_button.html(this_button.html().replace("(NO COMM)", "") );
+            //fill form with data
+            fillPanel(panel, json);
+        })
+        .fail(function() {
+            this_button.removeClass("btn-success");
+            this_button.removeClass("btn-danger");
+            this_button.html(this_button.html().replace("(NO COMM)", "") + "(NO COMM)")
+        })
     })
-    .done(function() {
-        // console.log( "second success" );
-    })
-    .fail(function() {
-        this_button.removeClass("btn-success");
-        this_button.removeClass("btn-danger");
-        this_button.html(this_button.html().replace("(NO COMM)", "") + "(NO COMM)")
-        // console.log( "error" );
-    })
-    .always(function() {
-        // console.log( "complete" );
-    });
+   
 });
 
 
 $('.input').on('change', function (e) {
     var panel = $(this).closest(".panel_layout");
-    var optionSelected = $("option:selected", this);
     var valueSelected = this.value;
-    var selectedText = optionSelected.text().toLowerCase();
-    var device = panel.data("device");
-    device.input = valueSelected;
-    try{
-        var id = parseInt($(this).closest(".panel_layout").attr('id').replace("panel_", "") );
-        if(isNaN(id)) throw new Error("bad_id");
-        // console.log(id);
-    }
-    catch(error){
-        console.error($(this).closest(".panel_layout").attr('id') + " does not have the proper id syntax 'panel_<id>'");
-        return;
-    }
-
-    $.post("/ird8200s/"+id, device, function(json) {
-        // fillPanel(panel, json);
-        // console.log(json)
-    }, "json");
+    var selectedText = $("option:selected", this).text().toLowerCase();
+    var id = getPanelID(panel);
+    if(id < 0) return; // exit if panel id not found
+    panels[id].devices[0].input = valueSelected;
+    $.post("/ird8200s/"+panels[id].devices[0].id, panels[id].devices[0], function(json) {}, "json");
 });
 
 
 $('.port').on('change', function (e) {
     var panel = $(this).closest(".panel_layout");
-    var optionSelected = $("option:selected", this);
     var valueSelected = this.value;
-    var selectedText = optionSelected.text().toLowerCase();
-    var device = panel.data("device");
-    device.port = valueSelected;
-    try{
-        var id = parseInt($(this).closest(".panel_layout").attr('id').replace("panel_", "") );
-        if(isNaN(id)) throw new Error("bad_id");
-        // console.log(id);
-    }
-    catch(error){
-        console.error($(this).closest(".panel_layout").attr('id') + " does not have the proper id syntax 'panel_<id>'");
-        return;
-    }
+    var selectedText = $("option:selected", this).text().toLowerCase();
+    var id = getPanelID(panel);
+    if(id < 0) return; // exit if panel id not found
+    if(valueSelected == panels[id].devices[0].port) return; //dont update if field didnt change
+    panels[id].devices[0].port = valueSelected;
 
-    $.post("/ird8200s/"+id, device, function(json) {
-        // fillPanel(panel, json);
-        // console.log(json)
-    }, "json");
+    $.post("/ird8200s/"+panels[id].devices[0].id, panels[id].devices[0], function(json) {}, "json");
 });
 
 $('.satFreq').on('blur', function (e) {
     var panel = $(this).closest(".panel_layout");
     var valueSelected = $(this).val();
-    var device = panel.data("device");
-    device.freq = valueSelected * 1000;
-    try{
-        var id = parseInt(panel.attr('id').replace("panel_", "") );
-        if(isNaN(id)) throw new Error("bad_id");
-        // console.log(id);
-    }
-    catch(error){
-        console.error($(this).closest(".panel_layout").attr('id') + " does not have the proper id syntax 'panel_<id>'");
-        return;
-    }
-
-    $.post("/ird8200s/"+id, device, function(json) {
-        // fillPanel(panel, json);
-    }, "json");
+    var id = getPanelID(panel);
+    if(id < 0) return; // exit if panel id not found
+    if(valueSelected * 1000 == panels[id].devices[0].freq) return; //dont update if field didnt change
+    panels[id].devices[0].freq = valueSelected * 1000;
+    $.post("/ird8200s/"+panels[id].devices[0].id, panels[id].devices[0], function(json) { }, "json");
 });
 
 $('.symRate').on('blur', function (e) {
     var panel = $(this).closest(".panel_layout");
     var valueSelected = $(this).val();
-    var device = panel.data("device");
-    device.symRate = valueSelected * 1000*1000;
-    try{
-        var id = parseInt(panel.attr('id').replace("panel_", "") );
-        if(isNaN(id)) throw new Error("bad_id");
-        console.log(id);
-    }
-    catch(error){
-        console.error($(this).closest(".panel_layout").attr('id') + " does not have the proper id syntax 'panel_<id>'");
-        return;
-    }
-
-    $.post("/ird8200s/"+id, device, function(json) {
-        // fillPanel(panel, json);
-    }, "json");
+    var id = getPanelID(panel);
+    if(id < 0) return;
+    if(valueSelected * 1000*1000 == panels[id].devices[0].symRate) return; //dont update if field didnt change
+    panels[id].devices[0].symRate = valueSelected * 1000*1000;
+    $.post("/ird8200s/"+panels[id].devices[0].id, panels[id].devices[0], function(json) {}, "json");
 });
 
 $('input.modulation[type=radio]').on('change', function (e) {
     var panel = $(this).closest(".panel_layout");
     var valueSelected = $(this).val();
-    var device = panel.data("device");
-    console.log(device);
-    device.modulation = valueSelected;
-    try{
-        var id = parseInt(panel.attr('id').replace("panel_", "") );
-        if(isNaN(id)) throw new Error("bad_id");
-        console.log(id);
-    }
-    catch(error){
-        console.error($(this).closest(".panel_layout").attr('id') + " does not have the proper id syntax 'panel_<id>'");
-        return;
-    }
-
-    $.post("/ird8200s/"+id, device, function(json) {
-        // fillPanel(panel, json);
-    }, "json");
+    var id = getPanelID(panel);
+    if(id < 0) return; // exit if panel id not found
+    if(valueSelected  == panels[id].devices[0].modulation) return; //dont update if field didnt change
+    panels[id].devices[0].modulation = valueSelected;
+    $.post("/ird8200s/"+panels[id].devices[0].id, panels[id].devices[0], function(json) {  }, "json");
 });
 
 $('.status').click();

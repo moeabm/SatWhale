@@ -6,3 +6,5 @@ block content
     div.panel.cPanel.col-sm-3(style="background-color: #{panel.color}")
       div #{panel.name}
       +panelLayout(panel)
+  script.
+    var panels = !{JSON.stringify(panels)}

@@ -8,6 +8,7 @@ router.get('/', function(req, res, next) {
 /* GET a 8200 JSON. */
 router.get('/:id', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id]
+    console.log(device);
     device.getStatus(
         function(device){
             res.send(device);
@@ -19,9 +20,13 @@ router.post('/:id', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id]
     var updatedDevice = req.body
     var io = req.app.io;
+    console.log("updatedDevice");
+    console.log(updatedDevice);
+
     device.updateStatus(updatedDevice,
         function(updated){
-            io.emit('device', updated);
+            io.emit('ird8200', updated);
+            console.log("update pushed");
             //res.send(updated);
             res.send("updated");
         }
