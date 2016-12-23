@@ -1,0 +1,7 @@
+include panels/full_8200.jade
+mixin panelLayout(panel)
+    case panel.type
+        when "full_8200"
+            +full_8200(panel)
+        default
+            p #{JSON.stringify(panel)}

@@ -17,6 +17,7 @@ io.on('connection', function(){ console.log("new connection") });
 
 var config = require('./config.json').config;
 var devices = {};
+var panels = config.panels;
 var snmpDeviceTypes = [
     "D9854",
     "ird8200",
@@ -28,12 +29,18 @@ var serOverIPDeviceTypes = [
 ];
 var i;
 for (i = 0; i < config.devices.length; i++) {
-    devices[i] = require("./snmp_modules/" + config.devices[i].type)(config.devices[i].address, config.devices[i].color);
+    devices[i] = require("./snmp_modules/" + config.devices[i].type)(config.devices[i].address);
     devices[i].type = config.devices[i].type;
     devices[i].name = config.devices[i].name;
-    devices[i].id = i;
+    devices[i].id =  config.devices[i].id;
+}
+for (i = 0; i < panels.length; i++) {
+    for (j = 0; j < panels[i].devices.length; j++) {
+        panels[i].devices[j] = devices[panels[i].devices[j].id]
+    }
 }
 app.set('devices', devices);
+app.set('panels', panels);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

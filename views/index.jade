@@ -1,8 +1,8 @@
-include devices.jade
+include panels.jade
 extends layout
 
 block content
-  each device in devices
-    div.panel.cPanel.col-sm-3(style="background-color: #{device.color}")
-      div #{device.name}
-      +deviceLayout(device)
+  each panel in panels
+    div.panel.cPanel.col-sm-3(style="background-color: #{panel.color}")
+      div #{panel.name}
+      +panelLayout(panel)

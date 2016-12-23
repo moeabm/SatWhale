@@ -78,7 +78,6 @@ var ird8200 = function (addr, clr) {
     return {
         //public variables
         name: "New Device",
-        color: clr,
         type: "ird8200",
         lock: false,
         address: addr,
@@ -189,7 +188,7 @@ var ird8200 = function (addr, clr) {
                     this_device.setLOFreq(freqToLO(newData.freq), newData.port, function(){
                         this_device.setSatFreq(newData.freq, newData.port, finished)
                     });
-                } 
+                }
                 else {
                     finished(); // freq unchanged.. finish
                 }
@@ -197,7 +196,7 @@ var ird8200 = function (addr, clr) {
                 if(newData.symRate != this_device.symRate){
                     console.log("==========Symrate change========");
                     this_device.setSymRate(newData.symRate, newData.port, finished)
-                } 
+                }
                 else {
                     finished(); // symrate unchanged.. finish
                 }
@@ -205,12 +204,12 @@ var ird8200 = function (addr, clr) {
                 if(newData.modulation != this_device.modulation){
                     console.log("==========Modulation change========");
                     this_device.setModulation(newData.modulation, newData.port, finished)
-                } 
+                }
                 else {
                     finished(); // modulation unchanged.. finish
                 }
                 finished(); // port unchanged.. finish
-            }   
+            }
             function doCallback(){
               cb(this_device);
             }

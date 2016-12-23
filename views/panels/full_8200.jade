@@ -1,7 +1,7 @@
-mixin ird8200(device)
-    div.panel_layout(id="panel_#{device.id}")
+mixin full_8200(panel)
+    div.panel_layout(id="panel_#{panel.id}")
         div.form-group
-            button.btn.col-xs-12.status #{device.name}
+            button.btn.col-xs-12.status #{panel.name}
             span.nopad.col-xs-6
                 select.input.form-control
                     option(value="") Select Input
@@ -33,16 +33,16 @@ mixin ird8200(device)
                 div.col-xs-4
                     .form-check
                       label.form-check-label
-                        input.form-check-input.modulation(type='radio', name='modulation_#{device.id}', value=0, checked)
+                        input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=0, checked)
                         |     DVB-S
                     .form-check
                       label.form-check-label
-                        input.form-check-input.modulation(type='radio', name='modulation_#{device.id}', value=2)
+                        input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=2)
                         |     DVB-S2
                 div.col-xs-4
                     .form-check
                       label.form-check-label
-                        input.form-check-input.modulation(type='radio', name='modulation_#{device.id}', value=3)
+                        input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=3)
                         |     AUTO
             div.row
                 label.col-xs-4.text-right.text-nowrap Service
