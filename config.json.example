@@ -1,30 +1,40 @@
 {
     "config": {
-        "devices": [
-            {
-                 "name": "REM_61",
+        "devices": {
+            "11": {
+                 "id": 11,
                  "type": "ird8200",
-                 "address": "192.168.50.155",
-                 "color": "#aaafff"
+                 "address": "localhost"
             },
-            {
-                 "name": "REM_62",
+            "22": {
+                 "id": 22,
                  "type": "ird8200",
-                 "address": "192.168.50.155",
-                 "color": "#aacfff"
+                 "address": "192.168.50.155"
             },
-            {
-                 "name": "REM_63",
+            "33": {
+                 "id": 33,
                  "type": "ird8200",
-                 "address": "192.168.50.156",
-                 "color": "#aa3fff"
+                 "address": "192.168.50.156"
             },
-            {
-                 "name": "REM_64",
+            "44": {
+                 "id": 44,
                  "type": "ird8200",
-                 "address": "192.168.50.157",
-                 "color": "#aa1fff"
+                 "address": "192.168.50.157"
             }
-        ]
+        },
+        "panels":
+        {
+            "55": {
+                "id": 55,
+                "name": "REM_64",
+                "type": "full_8200",
+                "color": "#aa00ff",
+                "devices": [
+                    {
+                        "id": 44
+                    }
+                ]
+            }
+        }
     }
 }
