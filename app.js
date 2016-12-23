@@ -35,7 +35,7 @@ Object.keys(config.devices).forEach(function(i) {
     devices[i].id =  config.devices[i].id;
     try{
         setInterval(function(){
-          console.log("getting lock for id" + devices[i].id);
+          // console.log("getting lock for id" + devices[i].id);
             var lockStatus = devices[i].lock;
             devices[i].getLock(function(device){
                 if( devices[i].lock != lockStatus){
@@ -50,12 +50,9 @@ var i;
 // for (i = 0; i < panels.length; i++) {
 Object.keys(panels).forEach(function(i) {
     var panel = panels[i];
-    // console.log(panel.devices);
     for (j = 0; j < panel.devices.length; j++) {
         var id = panel.devices[j].id
-        console.log( "finding id " + id );
         panel.devices[j] = _.filter(devices, x => x.id == id)[0];
-        console.log( panel.devices[j] );
     }
 });
 app.set('devices', devices);

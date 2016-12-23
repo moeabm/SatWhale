@@ -17,6 +17,7 @@ socket.on('disconnect', function(){
 });
 
 function fillPanel(panel, data){
+    panel.find(".status").html(panel.find(".status").html().replace("(NO COMM)", "") );
     if(data.lock == true){
         panel.find(".status").addClass("btn-success");
         panel.find(".status").removeClass("btn-danger");
@@ -78,7 +79,6 @@ $('.status').on('click', function (e) {
             //update panel data
             panels[id].devices[0] = json;
             //clear no comm
-            this_button.html(this_button.html().replace("(NO COMM)", "") );
             //fill form with data
             fillPanel(panel, json);
         })
@@ -92,7 +92,16 @@ $('.status').on('click', function (e) {
 });
 
 
-$('.input').on('change', function (e) {
+// This allows the blur trigger to send the data update because by default changing a select will not blur
+$('.input, .port').on('change', function (e) {
+    if($(this).is(":focus")){
+        $(this).blur();
+    }
+});
+
+// We use blur instead of change because change could be called programatically.
+// We only want to trigger an update from users on this page and not from updates from the server.
+$('.input').on('blur', function (e) {
     var panel = $(this).closest(".panel_layout");
     var valueSelected = this.value;
     var selectedText = $("option:selected", this).text().toLowerCase();
@@ -102,8 +111,9 @@ $('.input').on('change', function (e) {
     $.post("/ird8200s/"+panels[id].devices[0].id, panels[id].devices[0], function(json) {}, "json");
 });
 
-
-$('.port').on('change', function (e) {
+// We use blur instead of change because change could be called programatically.
+// We only want to trigger an update from users on this page and not from updates from the server.
+$('.port').on('blur', function (e) {
     var panel = $(this).closest(".panel_layout");
     var valueSelected = this.value;
     var selectedText = $("option:selected", this).text().toLowerCase();
