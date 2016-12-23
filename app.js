@@ -4,6 +4,7 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var _ = require('lodash');
 
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -27,18 +28,36 @@ var snmpDeviceTypes = [
 var serOverIPDeviceTypes = [
     "APC100",
 ];
-var i;
-for (i = 0; i < config.devices.length; i++) {
+Object.keys(config.devices).forEach(function(i) {
     devices[i] = require("./snmp_modules/" + config.devices[i].type)(config.devices[i].address);
     devices[i].type = config.devices[i].type;
     devices[i].name = config.devices[i].name;
     devices[i].id =  config.devices[i].id;
-}
-for (i = 0; i < panels.length; i++) {
-    for (j = 0; j < panels[i].devices.length; j++) {
-        panels[i].devices[j] = devices[panels[i].devices[j].id]
+    try{
+        setInterval(function(){
+          console.log("getting lock for id" + devices[i].id);
+            var lockStatus = devices[i].lock;
+            devices[i].getLock(function(device){
+                if( devices[i].lock != lockStatus){
+                    io.emit(config.devices[i].type, devices[i]);
+                }
+            });
+        }, 1000);
     }
-}
+    catch(e) { }
+});
+var i;
+// for (i = 0; i < panels.length; i++) {
+Object.keys(panels).forEach(function(i) {
+    var panel = panels[i];
+    // console.log(panel.devices);
+    for (j = 0; j < panel.devices.length; j++) {
+        var id = panel.devices[j].id
+        console.log( "finding id " + id );
+        panel.devices[j] = _.filter(devices, x => x.id == id)[0];
+        console.log( panel.devices[j] );
+    }
+});
 app.set('devices', devices);
 app.set('panels', panels);
 
