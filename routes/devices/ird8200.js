@@ -20,13 +20,13 @@ router.post('/:id', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id]
     var updatedDevice = req.body
     var io = req.app.io;
-    console.log("updatedDevice");
-    console.log(updatedDevice);
 
     device.updateStatus(updatedDevice,
         function(updated){
             io.emit('ird8200', updated);
             console.log("update pushed");
+            console.log("updatedDevice");
+            console.log(updated);
             //res.send(updated);
             res.send("updated");
         }

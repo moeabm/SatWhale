@@ -38,7 +38,7 @@ function fillPanel(panel, data){
         panel.find(".symRate").val(data.symRate/1000000).change();
     if(panel.find(".symRate").val() != data.symRate/1000)
         panel.find(".symRate").val(data.symRate/1000000).change();
-    if(panel.find(".modulation").val() != data.modulation)
+    if(panel.find(".modulation:checked").val() != data.modulation)
         panel.find(".modulation").filter("[value="+data.modulation+"]").prop('checked', true);
 }
 

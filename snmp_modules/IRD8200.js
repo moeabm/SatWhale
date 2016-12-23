@@ -207,7 +207,7 @@ var ird8200 = function (addr, clr) {
                 }
 
                 if(newData.modulation != "" && newData.modulation != this_device.modulation){
-                    // console.log("==========Modulation change========");
+                    console.log("==========Modulation change========");
                     this_device.setModulation(newData.modulation, newData.port, finished)
                 }
                 else {
@@ -421,9 +421,12 @@ var ird8200 = function (addr, clr) {
                 if (error) {
                     // console.log(oid + ': ' + error);
                 } else {
-                    device.modulation = varbinds[0].value;
-                    // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
-                    cb();
+
+                    device.getModulation(port, function(varbinds){
+                        device.modulation = varbinds[0].value;
+                        console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
+                        cb();
+                    });
                 }
             });
         },
