@@ -149,6 +149,13 @@ var ird8200 = function(addr, clr) {
             //  modulation
             var finished = _.after(5, doCallback);
             var this_device = this;
+            var fail_sent = false;
+            var failed = function(){
+                if(fail_sent != true) {
+                    fail_sent = true;
+                    return fcb();
+                }
+            }
             // console.log("==========Update==========");
             // console.log(this_device);
             // console.log("==========New Data========");
@@ -157,12 +164,12 @@ var ird8200 = function(addr, clr) {
             this.getLock(function(device) {
                 finished();
             }, function() {
-                return fcb();
+                return failed();
             });
 
             if (newData.input != "" && newData.input != this_device.input) {
                 console.log("==========Input Changed========");
-                this.setInput(newData.input, finished, fcb);
+                this.setInput(newData.input, finished, failed);
             } else finished(); // input unchanged.. finish
 
             if (newData.port != "" && newData.port != this_device.port) {
@@ -171,27 +178,27 @@ var ird8200 = function(addr, clr) {
                         if (newData.freq != "" && newData.freq != this_device.freq) {
                             console.log("==========Port Changed and freq========");
                             this_device.setLOFreq(freqToLO(newData.freq), newData.port, function() {
-                                this_device.setSatFreq(newData.freq, newData.port, finished, fcb)
+                                this_device.setSatFreq(newData.freq, newData.port, finished, failed)
                             })
                         } else {
                             // console.log("==========no freq change========");
                             this_device.getLOFreq(newData.port, function() {
-                                this_device.getSatFreq(newData.port, finished, fcb)
+                                this_device.getSatFreq(newData.port, finished, failed)
                             })
                         }
                         if (newData.symRate != "" && newData.symRate != this_device.symRate) {
                             console.log("==========Port Changed and symRate========");
-                            this_device.setSymRate(newData.symRate, newData.port, finished, fcb)
+                            this_device.setSymRate(newData.symRate, newData.port, finished, failed)
                         } else {
                             // console.log("==========no symrate change========");
-                            this_device.getSymRate(newData.port, finished, fcb)
+                            this_device.getSymRate(newData.port, finished, failed)
                         }
                         if (newData.modulation != "" && newData.modulation != this_device.modulation) {
                             console.log("==========Port Changed and Modulation========");
-                            this_device.setModulation(newData.modulation, newData.port, finished, fcb)
+                            this_device.setModulation(newData.modulation, newData.port, finished, failed)
                         } else {
                             // console.log("==========no modulation change========");
-                            this_device.getModulation(newData.port, finished, fcb)
+                            this_device.getModulation(newData.port, finished, failed)
                         }
                     },
                     function(data) {
