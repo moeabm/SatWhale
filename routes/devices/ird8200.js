@@ -3,7 +3,7 @@ var router = express.Router();
 
 /* GET ird8200s listing. */
 router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+  res.send(req.app.get('devices'));
 });
 /* GET a 8200 JSON. */
 router.get('/:id', function(req, res, next) {
@@ -12,6 +12,9 @@ router.get('/:id', function(req, res, next) {
     device.getStatus(
         function(device){
             res.send(device);
+        },
+        function(){
+            res.status(500).send("get Status failed.")
         }
     )
 });
@@ -29,6 +32,9 @@ router.post('/:id', function(req, res, next) {
             // console.log(updated);
             //res.send(updated);
             res.send("updated");
+        },
+        function(){
+            res.status(500).send("set Status failed.")
         }
     )
 });
@@ -39,7 +45,13 @@ router.get('/:id/services', function(req, res, next) {
     device.getServiceArray(function(services){
         device.getService(function(currentService){
             res.send({services: services, selected: currentService});
+        },
+        function(){
+            res.status(500).send("get service failed.")
         });
+    },
+    function(){
+        res.status(500).send("get service array failed.")
     });
 });
 
@@ -50,6 +62,9 @@ router.post('/:id/services', function(req, res, next) {
     device.setService(service, function(udpated_device){
         io.emit('ird8200', udpated_device);
         res.send("updated");
+    },
+    function(){
+        res.status(500).send("set service failed.")
     });
 });
 

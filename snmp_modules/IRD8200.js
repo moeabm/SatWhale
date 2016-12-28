@@ -47,9 +47,9 @@ var SAT = 1;
 var IP = 3;
 var AUTO = 4;
 
-function freqToLO(freq){
-    if(freq < 12700000 && freq > 11700000) return 10750000;//Hz Ku range
-    if(freq < 4200000 && freq > 3625000) return 5150000;//Hz C range
+function freqToLO(freq) {
+    if (freq < 12700000 && freq > 11700000) return 10750000; //Hz Ku range
+    if (freq < 4200000 && freq > 3625000) return 5150000; //Hz C range
     console.log("Invalid frequency: " + freq + "Hz");
     return -1;
 }
@@ -68,12 +68,12 @@ function freqToLO(freq){
 // String oidSetAudioSer;
 // String oidGetAudioSer;
 
-var ird8200 = function (addr, clr) {
+var ird8200 = function(addr, clr) {
     //variables that are not accessible outside this scope
     var session = new snmp.Session({
-            host: addr,
-            community: "private"
-        })
+        host: addr,
+        community: "private"
+    })
 
     return {
         //public variables
@@ -90,162 +90,161 @@ var ird8200 = function (addr, clr) {
         current_service: null,
 
         //public functions
-        getAddress: function () {
+        getAddress: function() {
             return address;
         },
-        setAddress: function (addr) {
+        setAddress: function(addr) {
             address = addr;
             session = new snmp.Session({
                 host: address
             });
         },
-        getStatus: function(cb){
+        getStatus: function(cb, fcb) {
             var finished = _.after(5, doCallback);
             var this_device = this;
-            // console.log("getting status orignal: ");
-            // console.log(this_device);
-
-            this.getLock(function(device){
-              finished();
+            var fail_sent = false;
+            var failed = function(){
+                if(fail_sent != true) {
+                    fail_sent = true;
+                    return fcb();
+                }
+            }
+            this.getLock(function(device) {
+                finished();
+            }, function() {
+                return failed();
             });
-            this.getInput(function(device){
-                if(this_device.input == SAT){
-                // console.log("got input: " + this_device.input);
-                    this_device.getPort(function(device){
-                        this_device.getSatFreq(this_device.port, function(device){
-                          finished();
-                        });
-                        this_device.getLOFreq(this_device.port, function(device){
-                          finished();
-                        });
-                        this_device.getSymRate(this_device.port, function(device){
-                          finished();
-                        });
-                        this_device.getModulation(this_device.port, function(device){
-                          finished();
-                        });
+            this.getInput(function(device) {
+                if (this_device.input == SAT) {
+                    this_device.getPort(function(device) {
+                        this_device.getSatFreq(this_device.port, finished, finished);
+                        this_device.getLOFreq(this_device.port, finished, finished);
+                        this_device.getSymRate(this_device.port, finished, finished);
+                        this_device.getModulation(this_device.port, finished, finished);
+                    }, function() {
+                        finished();
+                        finished();
+                        finished();
+                        finished();
                     });
-                }
-                else{
+                } else {
                     finished();
                     finished();
                     finished();
                     finished();
                 }
-            });
-            function doCallback(){
+            }, failed);
+
+            function doCallback() {
                 // console.log("all done")
-              cb(this_device);
+                cb(this_device);
             }
         },
 
-        updateStatus: function(newData, cb){
+        updateStatus: function(newData, cb, fcb) {
             // finishes 4:
             //  input
             //  frequency
             //  symRate
             //  modulation
-            var finished = _.after(4, doCallback);
+            var finished = _.after(5, doCallback);
             var this_device = this;
             // console.log("==========Update==========");
             // console.log(this_device);
             // console.log("==========New Data========");
             // console.log(newData);
 
-            if(newData.input != "" && newData.input != this_device.input){
-                console.log("==========Input Changed========");
-                this.setInput(newData.input, finished);
-            }
-            else finished(); // input unchanged.. finish
+            this.getLock(function(device) {
+                finished();
+            }, function() {
+                return fcb();
+            });
 
-            if(newData.port != "" && newData.port != this_device.port){
+            if (newData.input != "" && newData.input != this_device.input) {
+                console.log("==========Input Changed========");
+                this.setInput(newData.input, finished, fcb);
+            } else finished(); // input unchanged.. finish
+
+            if (newData.port != "" && newData.port != this_device.port) {
                 console.log("==========Port Changed========");
-                this.setPort(newData.port, function(){
-                    if(newData.freq != "" && newData.freq != this_device.freq){
-                        console.log("==========Port Changed and freq========");
-                        this_device.setLOFreq(freqToLO(newData.freq), newData.port, function(){
-                            this_device.setSatFreq(newData.freq, newData.port, finished)
-                        })
-                    }
-                    else{
-                        // console.log("==========no freq change========");
-                        this_device.getLOFreq(newData.port, function(){
-                            this_device.getSatFreq(newData.port, finished)
-                        })
-                    }
-                    if(newData.symRate != "" && newData.symRate != this_device.symRate){
-                        console.log("==========Port Changed and symRate========");
-                        this_device.setSymRate(newData.symRate, newData.port, finished)
-                    }
-                    else{
-                        // console.log("==========no symrate change========");
-                        this_device.getSymRate(newData.port, finished)
-                    }
-                    if(newData.modulation != "" && newData.modulation != this_device.modulation){
-                        console.log("==========Port Changed and Modulation========");
-                        this_device.setModulation(newData.modulation, newData.port, finished)
-                    }
-                    else{
-                        // console.log("==========no modulation change========");
-                        this_device.getModulation(newData.port, finished)
-                    }
-                },
-                function(data){
-                    finished();
-                    finished();
-                    finished();
-                });
-            }
-            else {
-                if(newData.freq != "" && newData.freq != this_device.freq){
-                    console.log("==========Freq change========");
-                    this_device.setLOFreq(freqToLO(newData.freq), newData.port, function(){
-                        this_device.setSatFreq(newData.freq, newData.port, finished)
+                this.setPort(newData.port, function() {
+                        if (newData.freq != "" && newData.freq != this_device.freq) {
+                            console.log("==========Port Changed and freq========");
+                            this_device.setLOFreq(freqToLO(newData.freq), newData.port, function() {
+                                this_device.setSatFreq(newData.freq, newData.port, finished, fcb)
+                            })
+                        } else {
+                            // console.log("==========no freq change========");
+                            this_device.getLOFreq(newData.port, function() {
+                                this_device.getSatFreq(newData.port, finished, fcb)
+                            })
+                        }
+                        if (newData.symRate != "" && newData.symRate != this_device.symRate) {
+                            console.log("==========Port Changed and symRate========");
+                            this_device.setSymRate(newData.symRate, newData.port, finished, fcb)
+                        } else {
+                            // console.log("==========no symrate change========");
+                            this_device.getSymRate(newData.port, finished, fcb)
+                        }
+                        if (newData.modulation != "" && newData.modulation != this_device.modulation) {
+                            console.log("==========Port Changed and Modulation========");
+                            this_device.setModulation(newData.modulation, newData.port, finished, fcb)
+                        } else {
+                            // console.log("==========no modulation change========");
+                            this_device.getModulation(newData.port, finished, fcb)
+                        }
+                    },
+                    function(data) {
+                        finished();
+                        finished();
+                        finished();
                     });
-                }
-                else {
+            } else {
+                if (newData.freq != "" && newData.freq != this_device.freq) {
+                    console.log("==========Freq change========");
+                    this_device.setLOFreq(freqToLO(newData.freq), newData.port, function() {
+                        this_device.setSatFreq(newData.freq, newData.port, finished, fcb)
+                    });
+                } else {
                     finished(); // freq unchanged.. finish
                 }
 
-                if(newData.symRate != "" && newData.symRate != this_device.symRate){
+                if (newData.symRate != "" && newData.symRate != this_device.symRate) {
                     // console.log("==========Symrate change========");
-                    this_device.setSymRate(newData.symRate, newData.port, finished)
-                }
-                else {
+                    this_device.setSymRate(newData.symRate, newData.port, finished, fcb)
+                } else {
                     finished(); // symrate unchanged.. finish
                 }
 
-                if(newData.modulation != "" && newData.modulation != this_device.modulation){
+                if (newData.modulation != "" && newData.modulation != this_device.modulation) {
                     console.log("==========Modulation change========");
-                    this_device.setModulation(newData.modulation, newData.port, finished)
-                }
-                else {
+                    this_device.setModulation(newData.modulation, newData.port, finished, fcb)
+                } else {
                     finished(); // modulation unchanged.. finish
                 }
-                // finished(); // port unchanged.. finish
             }
-            function doCallback(){
-              cb(this_device);
+
+            function doCallback() {
+                cb(this_device);
             }
         },
-        isLocked: function () {
+        isLocked: function() {
             return lock;
         },
-        getLock: function (callback) {
+        getLock: function(callback, fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.2.0";
             var device = this;
             session.get({
                 oid: oid
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    callback();
+                    fcb();
                 } else {
                     // // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
-                    if(varbinds[0].type == OCTETSTRING && varbinds[0].value == "LOCKED" ){
+                    if (varbinds[0].type == OCTETSTRING && varbinds[0].value == "LOCKED") {
                         device.lock = true;
-                    }
-                    else{
+                    } else {
                         device.lock = false;
                     }
                     callback(device);
@@ -253,16 +252,19 @@ var ird8200 = function (addr, clr) {
             });
         },
         // interger: 1-4 input port source
-        setInput: function (input, cb) {
+        setInput: function(input, cb, fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.1.2.0";
             var device = this;
+            var iInput = parseInt(input);
+            if (isNaN(iInput)) return fcb();
             session.set({
                 oid: oid,
-                value: parseInt(input),
+                value: iInput,
                 type: INTEGER
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
+                    fcb();
                 } else {
                     device.input = input;
                     cb();
@@ -270,14 +272,15 @@ var ird8200 = function (addr, clr) {
                 }
             });
         },
-        getInput: function (callback) {
+        getInput: function(callback, fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.1.2.0";
             var device = this;
             session.get({
                 oid: oid
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
+                    fcb();
                 } else {
                     device.input = varbinds[0].value;
                     callback(varbinds);
@@ -286,43 +289,43 @@ var ird8200 = function (addr, clr) {
             });
         },
         // interger: 1-4 input port source
-        setPort: function (port, cb, fcb) {
+        setPort: function(port, cb, fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.1.0";
             var device = this;
             var iPort = parseInt(port) - 1;
-            if(iPort < 0 || iPort > 3 || isNaN(iPort)) return fcb(device);
-            try{
+            if (iPort < 0 || iPort > 3 || isNaN(iPort)) return fcb(device);
+            try {
                 session.set({
                     oid: oid,
                     value: iPort,
                     type: INTEGER
-                }, function (error, varbinds) {
+                }, function(error, varbinds) {
                     if (error) {
                         // console.log(oid + ': ' + error);
+                        fcb();
                     } else {
-                        //validation               
+                        //validation
                         console.log("set: " + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
-                        device.getPort(function(returned_varbinds){ // this will set the local variable with the returned value
-                            if(returned_varbinds[0].value != varbinds[0].value){
-                                fcb(device); 
-                            }
-                            else cb(device);
+                        device.getPort(function(returned_varbinds) { // this will set the local variable with the returned value
+                            if (returned_varbinds[0].value != varbinds[0].value) {
+                                fcb(device);
+                            } else cb(device);
                         });
                     }
                 });
-            }
-            catch(e){
+            } catch (e) {
                 console.error(e);
             }
         },
-        getPort: function ( callback) {
+        getPort: function(callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.1.0";
             var device = this;
             session.get({
                 oid: oid
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
+                    fcb();
                 } else {
                     device.port = varbinds[0].value + 1;
                     callback(varbinds);
@@ -331,16 +334,21 @@ var ird8200 = function (addr, clr) {
             });
         },
         // INTEGER: 5150000 lnb lo freq
-        setLOFreq: function (freq, port, cb) {
+        setLOFreq: function(freq, port, cb, fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.2." + port;
             var device = this;
+            var iPort = parseInt(port);
+            if(isNaN(iPort)) return fcb();
+            var iFreq = parseInt(freq);
+            if(isNaN(iFreq)) return fcb();
             session.set({
                 oid: oid,
-                value: parseInt(freq),
+                value: iFreq,
                 type: INTEGER
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
+                    fcb();
                 } else {
                     device.loFreq = varbinds[0].value;
                     console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
@@ -348,14 +356,17 @@ var ird8200 = function (addr, clr) {
                 }
             });
         },
-        getLOFreq: function (port, callback) {
+        getLOFreq: function(port, callback, fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.2." + port;
+            var iPort = parseInt(port);
+            if(isNaN(iPort)) return fcb();
             var device = this;
             session.get({
                 oid: oid
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
+                    fcb();
                 } else {
                     device.loFreq = varbinds[0].value;
                     // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
@@ -364,17 +375,21 @@ var ird8200 = function (addr, clr) {
             });
         },
         // INTEGER: 4080000 sat freq
-        setSatFreq: function (freq, port, cb) {
+        setSatFreq: function(freq, port, cb, fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.3." + port;
             var device = this;
-            console.log(freq);
+            var iPort = parseInt(port);
+            if(isNaN(iPort)) return fcb();
+            var iFreq = parseInt(freq);
+            if(isNaN(iFreq)) return fcb();
             session.set({
                 oid: oid,
-                value: parseInt(freq),
+                value: iFreq,
                 type: INTEGER
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
+                    fcb();
                 } else {
                     device.freq = varbinds[0].value;
                     console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
@@ -382,14 +397,17 @@ var ird8200 = function (addr, clr) {
                 }
             });
         },
-        getSatFreq: function (port, callback) {
+        getSatFreq: function(port, callback,fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.3." + port;
             var device = this;
+            var iPort = parseInt(port);
+            if(isNaN(iPort)) return fcb();
             session.get({
                 oid: oid
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
+                    fcb();
                 } else {
                     device.freq = varbinds[0].value;
                     callback(varbinds);
@@ -398,16 +416,21 @@ var ird8200 = function (addr, clr) {
             });
         },
         // INTEGER: 27780000 symbol rate
-        setSymRate: function (rate, port, cb) {
+        setSymRate: function(rate, port, cb, fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.4." + port;
             var device = this;
+            var iPort = parseInt(port);
+            if(isNaN(iPort)) return fcb();
+            var iRate = parseInt(rate);
+            if(isNaN(iRate)) return fcb();
             session.set({
                 oid: oid,
-                value: parseInt(rate),
+                value: iRate,
                 type: INTEGER
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
+                    fcb();
                 } else {
                     device.symRate = varbinds[0].value;
                     // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
@@ -415,14 +438,17 @@ var ird8200 = function (addr, clr) {
                 }
             });
         },
-        getSymRate: function (port, callback) {
+        getSymRate: function(port, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.4." + port;
             var device = this;
+            var iPort = parseInt(port);
+            if(isNaN(iPort)) return fcb();
             session.get({
                 oid: oid
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
+                    fcb();
                 } else {
                     device.symRate = varbinds[0].value;
                     callback(varbinds);
@@ -431,20 +457,24 @@ var ird8200 = function (addr, clr) {
             });
         },
         // INTEGER: 0 Modulation 0=DVB-S 2=DVB-S2 or 8PSK 1=DVB-S2??
-        setModulation: function (mod, port, cb) {
+        setModulation: function(mod, port, cb, fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.5." + port;
             var device = this;
-            if(mod < 0 || mod > 3 || isNaN(mod)) return cb(device);
+            var iPort = parseInt(port);
+            if(isNaN(iPort)) return fcb();
+            var iMod = parseInt(mod);
+            if (iMod < 0 || iMod > 3 || isNaN(iMod)) return fcb();
             session.set({
                 oid: oid,
-                value: parseInt(mod),
+                value: iMod,
                 type: INTEGER
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
+                    fcb();
                 } else {
 
-                    device.getModulation(port, function(varbinds){
+                    device.getModulation(port, function(varbinds) {
                         device.modulation = varbinds[0].value;
                         // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                         cb();
@@ -452,14 +482,15 @@ var ird8200 = function (addr, clr) {
                 }
             });
         },
-        getModulation: function (port, callback) {
+        getModulation: function(port, callback, fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.5." + port;
             var device = this;
             session.get({
                 oid: oid
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
+                    fcb();
                 } else {
                     device.modulation = varbinds[0].value;
                     callback(varbinds);
@@ -468,45 +499,46 @@ var ird8200 = function (addr, clr) {
             });
         },
         // INTEGER: service array
-        setService: function (service, callback) {
+        setService: function(service, callback, fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.4.1.2.0";
             var device = this;
-            try{
-
+            var iService = parseInt(service);
+            if(isNaN(iService)) return fcb();
+            try {
                 session.set({
                     oid: oid,
-                    value: parseInt(service),
+                    value: iService,
                     type: INTEGER
-                }, function (error, varbinds) {
+                }, function(error, varbinds) {
                     if (error) {
                         // console.log(oid + ': ' + error);
+                        fcb();
                     } else {
                         console.log("set:" + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                         // callback(device);
-                        //validation               
-                        device.getService(function(retuned_service){ 
-                            if(retuned_service != varbinds[0].value){
+                        //validation
+                        device.getService(function(retuned_service) {
+                            if (retuned_service != varbinds[0].value) {
                                 //try again
                                 device.setService(service, callback);
-                            }
-                            else callback(device);
+                            } else callback(device);
                         });
                     }
                 });
-            }   
-            catch(e){
+            } catch (e) {
                 console.error(e);
             }
         },
         // INTEGER: service array
-        getService: function (cb) {
+        getService: function(cb,fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.4.1.2.0";
             var device = this;
             session.get({
                 oid: oid,
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
+                    fcb();
                 } else {
                     device.current_service = varbinds[0].value;
                     // console.log(varbinds);
@@ -515,34 +547,19 @@ var ird8200 = function (addr, clr) {
                 }
             });
         },
-        getServiceArray: function (callback) {
+        getServiceArray: function(callback,fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.4.1.1.1.2";
             session.getSubtree({
                 oid: oid
-            }, function (error, varbinds) {
+            }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
+                    fcb();
                 } else {
                     callback(varbinds);
                     // // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
                 }
             });
-        },
-
-        testSnmp: function () {
-            var oid = ".1.3.6.1.2.1.25.1.1.0";
-            session.get({
-                oid: oid
-            }, function (error, varbinds) {
-                if (error) {
-                    // console.log(oid + ': ' + error);
-                } else {
-                    // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
-                }
-            });
-        },
-        goodbye: function () {
-            return 'goodbye!';
         }
     };
 };

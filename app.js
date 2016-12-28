@@ -32,7 +32,7 @@ Object.keys(config.devices).forEach(function(i) {
     devices[i] = require("./snmp_modules/" + config.devices[i].type)(config.devices[i].address);
     devices[i].inputLabels = config.devices[i].inputLabels;
     devices[i].type = config.devices[i].type;
-    devices[i].name = config.devices[i].name;
+    // devices[i].name = config.devices[i].name;
     devices[i].id =  config.devices[i].id;
     try{
         setInterval(function(){
@@ -42,6 +42,8 @@ Object.keys(config.devices).forEach(function(i) {
                 if( devices[i].lock != lockStatus){
                     io.emit(config.devices[i].type, devices[i]);
                 }
+            }, function(){
+                console.log("cannot get lock status for device " + devices[i].id)
             });
         }, 1000);
     }
