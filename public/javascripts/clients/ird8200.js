@@ -1,6 +1,7 @@
 var socket = io('http://10.40.10.67:3000');
 socket.on('connect', function(){
     console.log("connected to socket io");
+    $('.status').click();
 });
 socket.on('ird8200', function(data){
     console.log("got updated ird8200 id: "+ data.id);
@@ -43,6 +44,7 @@ function fillPanel(panel, data){
 }
 
 function getAndFillServices(panel, id){
+    console.log("getting services " + id);
     $.getJSON("/ird8200s/"+id+"/services", function(json) {
         panel.find('.service').find('option').remove().end().append('<option></option>');
         $.each(json.services, function (i, item) {
@@ -93,7 +95,7 @@ $('.status').on('click', function (e) {
 
 
 // This allows the blur trigger to send the data update because by default changing a select will not blur
-$('.input, .port').on('change', function (e) {
+$('.input, .port, .service').on('change', function (e) {
     if($(this).is(":focus")){
         $(this).blur();
     }
@@ -153,6 +155,18 @@ $('input.modulation[type=radio]').on('change', function (e) {
     if(valueSelected  == panels[id].devices[0].modulation) return; //dont update if field didnt change
     panels[id].devices[0].modulation = valueSelected;
     $.post("/ird8200s/"+panels[id].devices[0].id, panels[id].devices[0], function(json) {  }, "json");
+});
+
+// We use blur instead of change because change could be called programatically.
+// We only want to trigger an update from users on this page and not from updates from the server.
+$('.service').on('blur', function (e) {
+    var panel = $(this).closest(".panel_layout");
+    var valueSelected = this.value;
+    var selectedText = $("option:selected", this).text().toLowerCase();
+    var id = getPanelID(panel);
+    if(id < 0) return; // exit if panel id not found
+    panels[id].devices[0].current_service = valueSelected;
+    $.post("/ird8200s/"+panels[id].devices[0].id+"/services", panels[id].devices[0], function(json) {}, "json");
 });
 
 $('.status').click();

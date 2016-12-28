@@ -11,11 +11,9 @@ mixin full_8200(panel)
                     option(value=4) AUTO
             span.hideable.sat.nopad.col-xs-6
                 select.form-control.port
-                    option(value=0) Select Port
-                    option(value=1) 1
-                    option(value=2) 2
-                    option(value=3) 3
-                    option(value=4) 4
+                    option(value="NA") Select Port
+                    each label, index in panel.devices[0].inputLabels
+                        option(value=index) #{index} - #{label}
         div.hideable.sat
             div.row &nbsp;
             div.row

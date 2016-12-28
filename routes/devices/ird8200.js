@@ -24,9 +24,9 @@ router.post('/:id', function(req, res, next) {
     device.updateStatus(updatedDevice,
         function(updated){
             io.emit('ird8200', updated);
-            console.log("update pushed");
-            console.log("updatedDevice");
-            console.log(updated);
+            // console.log("update pushed");
+            // console.log("updatedDevice");
+            // console.log(updated);
             //res.send(updated);
             res.send("updated");
         }
@@ -40,6 +40,16 @@ router.get('/:id/services', function(req, res, next) {
         device.getService(function(currentService){
             res.send({services: services, selected: currentService});
         });
+    });
+});
+
+router.post('/:id/services', function(req, res, next) {
+    var device = req.app.get('devices')[req.params.id];
+    var service = req.body.current_service
+    var io = req.app.io;
+    device.setService(service, function(udpated_device){
+        io.emit('ird8200', udpated_device);
+        res.send("updated");
     });
 });
 
