@@ -1,5 +1,5 @@
-mixin full_8200(panel)
-    div.full_8200.panel_layout(id="panel_#{panel.id}")
+mixin full_8200_with_qt(panel)
+    div.full_8200_with_qt.panel_layout(id="panel_#{panel.id}")
         div.form-group
             button.btn.col-xs-12.status #{panel.name}
             span.nopad.col-xs-6
@@ -10,10 +10,11 @@ mixin full_8200(panel)
                     option(value=3) IP
                     option(value=4) AUTO
             span.hideable.sat.nopad.col-xs-6
-                select.form-control.port
-                    option(value="NA") Select Port
-                    each label, index in panel.devices[0].inputLabels
-                        option(value=index) #{index} - #{label}
+                input.output.form-control(readonly disabled value="#{panel.controlled_output}").hidden
+                select.form-control.qt_input
+                    option(value="NA") Select QT Input
+                    each label, index in panel.devices[1].inputs
+                        option(value=(index+1)) #{index+1} - #{label}
         div.hideable.sat
             div.row &nbsp;
             div.row

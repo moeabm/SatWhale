@@ -9,6 +9,7 @@ var _ = require('lodash');
 var index = require('./routes/index');
 var users = require('./routes/users');
 var ird8200 = require('./routes/devices/ird8200');
+var qt_lband = require('./routes/devices/qt_lband');
 
 var app = express();
 var server = require('http').createServer(app);
@@ -35,19 +36,27 @@ Object.keys(config.devices).forEach(function(i) {
     // devices[i].name = config.devices[i].name;
     devices[i].id =  config.devices[i].id;
     try{
-        setInterval(function(){
-          // console.log("getting lock for id" + devices[i].id);
-            var lockStatus = devices[i].lock;
-            devices[i].getLock(function(device){
-                if( devices[i].lock != lockStatus){
-                    io.emit(config.devices[i].type, devices[i]);
-                }
-            }, function(){
-                console.log("cannot get lock status for device " + devices[i].id)
-            });
-        }, 1000);
+      devices[i].getStatus(function(){ }, function(){ });
     }
     catch(e) { }
+    setInterval(function(){
+      // console.log("getting lock for id" + devices[i].id);
+      try{
+        var lockStatus = devices[i].lock;
+        if(typeof devices[i].lock == "undefined") throw new Error('device has no lock status field.');
+        devices[i].getLock(function(device){
+            // console.log(lockStatus + " vs " + devices[i].lock)
+            if( devices[i].lock != lockStatus){
+                io.emit(config.devices[i].type, devices[i]);
+            }
+        }, function(){
+            console.log("cannot get lock status for device " + devices[i].id)
+        });
+      }
+      catch(e) {
+        // console.log(e)
+      }
+    }, 1000);
 });
 var i;
 // for (i = 0; i < panels.length; i++) {
@@ -76,6 +85,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', index);
 app.use('/users', users);
 app.use('/ird8200s', ird8200);
+app.use('/qtlbands', qt_lband);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

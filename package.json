@@ -17,8 +17,10 @@
     "jade": "~1.11.0",
     "lodash": "^4.17.2",
     "morgan": "~1.7.0",
+    "pad-left": "^2.1.0",
     "serve-favicon": "~2.3.0",
     "snmp-native": "^1.0.21",
-    "socket.io": "^1.7.2"
+    "socket.io": "^1.7.2",
+    "synchronize": "^2.0.0"
   }
 }

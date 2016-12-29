@@ -8,7 +8,7 @@ router.get('/', function(req, res, next) {
 /* GET a 8200 JSON. */
 router.get('/:id', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id]
-    console.log(device);
+    // console.log(device);
     device.getStatus(
         function(device){
             res.send(device);

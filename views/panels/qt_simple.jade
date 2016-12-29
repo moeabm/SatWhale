@@ -1,0 +1,14 @@
+mixin qt_simple(panel)
+    div.qt_simple.panel_layout(id="panel_#{panel.id}")
+        div.form-group
+            button.btn.col-xs-12.status #{panel.name}
+            span.nopad.col-xs-12
+                select.output.form-control
+                    each output, index in panel.devices[0].outputs
+                        option(value=(index+1) ) #{index + 1} - #{output}
+            span.nopad.col-xs-12
+                select.qt_input.form-control
+                    each input, index in panel.devices[0].inputs
+                        option(value=(index+1)) #{index + 1} - #{input}
+            span.col-xs-8.col-xs-offset-2
+                button.col-xs-12.btn.btn-primary.take Take

@@ -1,23 +1,16 @@
-var socket = io('http://10.40.10.67:3000');
-socket.on('connect', function(){
-    console.log("connected to socket io");
-    $('.status').click();
-});
+
 socket.on('ird8200', function(data){
     console.log("got updated ird8200 id: "+ data.id);
     $.each(panels, function(index, panel){
         var panels_with_device = $.grep(panel.devices, function(device){ return device.id == data.id; });
         if(panels_with_device.length > 0){
             var panel_layout = $("#panel_"+panel.id);
-            fillPanel(panel_layout, data)
+            fill_8200_Panel(panel_layout, data)
         }
     })
 });
-socket.on('disconnect', function(){
-    console.log("disconnected from socket io");
-});
 
-function fillPanel(panel, data){
+function fill_8200_Panel(panel, data){
     panel.find(".status").html(panel.find(".status").html().replace("(NO COMM)", "") );
     if(data.lock == true){
         panel.find(".status").addClass("btn-success");
@@ -70,7 +63,7 @@ function getPanelID(panel_layout){
     }
 }
 
-$('.status').on('click', function (e) {
+$('.full_8200 .status').on('click', function (e) {
     var this_button = $(this);
     var id = getPanelID($(this).closest(".panel_layout"));
     if(id < 0) return; // exit if panel id not found
@@ -82,7 +75,7 @@ $('.status').on('click', function (e) {
             panels[id].devices[0] = json;
             //clear no comm
             //fill form with data
-            fillPanel(panel, json);
+            fill_8200_Panel(panel, json);
         })
         .fail(function() {
             this_button.removeClass("btn-success");
@@ -95,7 +88,7 @@ $('.status').on('click', function (e) {
 
 
 // This allows the blur trigger to send the data update because by default changing a select will not blur
-$('.input, .port, .service').on('change', function (e) {
+$('.full_8200 .input,.full_8200  .port,.full_8200  .service').on('change', function (e) {
     if($(this).is(":focus")){
         $(this).blur();
     }
@@ -103,7 +96,7 @@ $('.input, .port, .service').on('change', function (e) {
 
 // We use blur instead of change because change could be called programatically.
 // We only want to trigger an update from users on this page and not from updates from the server.
-$('.input').on('blur', function (e) {
+$('.full_8200 .input').on('blur', function (e) {
     var panel = $(this).closest(".panel_layout");
     var valueSelected = this.value;
     var selectedText = $("option:selected", this).text().toLowerCase();
@@ -115,7 +108,7 @@ $('.input').on('blur', function (e) {
 
 // We use blur instead of change because change could be called programatically.
 // We only want to trigger an update from users on this page and not from updates from the server.
-$('.port').on('blur', function (e) {
+$('.full_8200 .port').on('blur', function (e) {
     var panel = $(this).closest(".panel_layout");
     var valueSelected = this.value;
     var selectedText = $("option:selected", this).text().toLowerCase();
@@ -127,7 +120,7 @@ $('.port').on('blur', function (e) {
     $.post("/ird8200s/"+panels[id].devices[0].id, panels[id].devices[0], function(json) {}, "json");
 });
 
-$('.satFreq').on('blur', function (e) {
+$('.full_8200 .satFreq').on('blur', function (e) {
     var panel = $(this).closest(".panel_layout");
     var valueSelected = $(this).val();
     var id = getPanelID(panel);
@@ -137,7 +130,7 @@ $('.satFreq').on('blur', function (e) {
     $.post("/ird8200s/"+panels[id].devices[0].id, panels[id].devices[0], function(json) { }, "json");
 });
 
-$('.symRate').on('blur', function (e) {
+$('.full_8200 .symRate').on('blur', function (e) {
     var panel = $(this).closest(".panel_layout");
     var valueSelected = $(this).val();
     var id = getPanelID(panel);
@@ -147,7 +140,7 @@ $('.symRate').on('blur', function (e) {
     $.post("/ird8200s/"+panels[id].devices[0].id, panels[id].devices[0], function(json) {}, "json");
 });
 
-$('input.modulation[type=radio]').on('change', function (e) {
+$('.full_8200 input.modulation[type=radio]').on('change', function (e) {
     var panel = $(this).closest(".panel_layout");
     var valueSelected = $(this).val();
     var id = getPanelID(panel);
@@ -159,7 +152,7 @@ $('input.modulation[type=radio]').on('change', function (e) {
 
 // We use blur instead of change because change could be called programatically.
 // We only want to trigger an update from users on this page and not from updates from the server.
-$('.service').on('blur', function (e) {
+$('.full_8200 .service').on('blur', function (e) {
     var panel = $(this).closest(".panel_layout");
     var valueSelected = this.value;
     var selectedText = $("option:selected", this).text().toLowerCase();
@@ -169,4 +162,4 @@ $('.service').on('blur', function (e) {
     $.post("/ird8200s/"+panels[id].devices[0].id+"/services", panels[id].devices[0], function(json) {}, "json");
 });
 
-$('.status').click();
+// $('.full_8200 .status').click();
