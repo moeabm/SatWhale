@@ -6,60 +6,52 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var _ = require('lodash');
 
-var index = require('./routes/index');
-var users = require('./routes/users');
-var ird8200 = require('./routes/devices/ird8200');
-var qt_lband = require('./routes/devices/qt_lband');
-
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
 app.io = io;
 io.on('connection', function(){ console.log("new connection") });
 
+var device_drivers = {
+    ird8200: require('./snmp_modules/ird8200'),
+    qt_lband: require('./snmp_modules/qt_lband')
+}
+
 var config = require('./config.json').config;
 var devices = {};
 var panels = config.panels;
-var snmpDeviceTypes = [
-    "D9854",
-    "ird8200",
-    "QTLband",
-    "TT1260"
-];
-var serOverIPDeviceTypes = [
-    "APC100",
-];
+
+
+//initialize devices
 Object.keys(config.devices).forEach(function(i) {
-    devices[i] = require("./snmp_modules/" + config.devices[i].type)(config.devices[i].address);
-    devices[i].inputLabels = config.devices[i].inputLabels;
-    devices[i].type = config.devices[i].type;
-    // devices[i].name = config.devices[i].name;
-    devices[i].id =  config.devices[i].id;
-    try{
-      devices[i].getStatus(function(){ }, function(){ });
-    }
-    catch(e) { }
-    setInterval(function(){
-      // console.log("getting lock for id" + devices[i].id);
-      try{
-        var lockStatus = devices[i].lock;
-        if(typeof devices[i].lock == "undefined") throw new Error('device has no lock status field.');
-        devices[i].getLock(function(device){
-            // console.log(lockStatus + " vs " + devices[i].lock)
-            if( devices[i].lock != lockStatus){
-                io.emit(config.devices[i].type, devices[i]);
-            }
-        }, function(){
-            console.log("cannot get lock status for device " + devices[i].id)
-        });
-      }
-      catch(e) {
-        // console.log(e)
-      }
-    }, 1000);
+    devices[i] = device_drivers[config.devices[i].type](config.devices[i]); //require("./snmp_modules/" + config.devices[i].type)(config.devices[i]);
+    devices[i].initialize(function(){
+        io.emit(config.devices[i].type, devices[i]);
+    });
+    // try{
+    //   devices[i].getStatus(function(){ }, function(){ });
+    // }
+    // catch(e) { }
+    // setInterval(function(){
+    //   try{
+    //     var lockStatus = devices[i].lock;
+    //     if(typeof devices[i].lock == "undefined") throw new Error('device has no lock status field.');
+    //     devices[i].getLock(function(device){
+    //         // console.log(lockStatus + " vs " + devices[i].lock)
+    //         if( devices[i].lock != lockStatus){
+    //             io.emit(config.devices[i].type, devices[i]);
+    //         }
+    //     }, function(){
+    //         console.log("cannot get lock status for device " + devices[i].id)
+    //     });
+    //   }
+    //   catch(e) {
+    //     // console.log(e)
+    //   }
+    // }, 1000);
 });
-var i;
-// for (i = 0; i < panels.length; i++) {
+
+//initialize panels
 Object.keys(panels).forEach(function(i) {
     var panel = panels[i];
     for (j = 0; j < panel.devices.length; j++) {
@@ -67,8 +59,19 @@ Object.keys(panels).forEach(function(i) {
         panel.devices[j] = _.filter(devices, x => x.id == id)[0];
     }
 });
+
+// globals
 app.set('devices', devices);
 app.set('panels', panels);
+
+
+var device_routes = {
+    ird8200: require('./routes/devices/ird8200'),
+    qt_lband: require('./routes/devices/qt_lband')
+}
+//routes
+app.use('/ird8200s', device_routes.ird8200);
+app.use('/qtlbands', device_routes.qt_lband);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -82,10 +85,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+var index = require('./routes/index');
+var users = require('./routes/users');
 app.use('/', index);
 app.use('/users', users);
-app.use('/ird8200s', ird8200);
-app.use('/qtlbands', qt_lband);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

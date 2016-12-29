@@ -54,33 +54,30 @@ function freqToLO(freq) {
     return -1;
 }
 
-// String oidGetLocked = ".1.3.6.1.4.1.1773.1.3.208.2.2.2.0";         //  1 get LOCKED
-// String oidGetPower = ".1.3.6.1.4.1.1773.1.3.208.2.2.3.0";         //  2 get POWER
-//
-// String oidSetInput = ".1.3.6.1.4.1.1773.1.3.208.2.1.4.0";    //   interger: 1-4 input port source
-// String oidSetLowFreq = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.2." + port;  //   5 INTEGER: 27780000 lnb lo freq symbol rate
-// String oidSetSatFreq = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.3." + port;  //   4 INTEGER: 4080000 sat freq
-// String oidSetSymRate = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.4." + port;  //   3 INTEGER: 5150000 symbol rate
-// String oidSetModulat = ".1.3.6.1.4.1.1773.1.3.208.2.2.15.1.5." + port;  //   6 INTEGER: 0 Modulation 0=DVB-S 2=DVB-S2 or 8PSK 1=DVB-S2??
-//
-// String oidSetService = ".1.3.6.1.4.1.1773.1.3.208.4.1.2.0";        //   7 INTEGER: service array
-// String oidGetService = ".1.3.6.1.4.1.1773.1.3.208.4.1.1.1.2";      //  8 STRING: gets service array
-// String oidSetAudioSer;
-// String oidGetAudioSer;
+var ird8200 = function(options) {
 
-var ird8200 = function(addr, clr) {
+    if( typeof options.address === "undefined"){
+        throw new Error("Addresss missing for ird8200. Please see configuration");
+        return null;
+    }
+    if( typeof options.id === "undefined"){
+        throw new Error("ID missing for ird8200. Please see configuration");
+        return null;
+    }
     //variables that are not accessible outside this scope
     var session = new snmp.Session({
-        host: addr,
+        host: options.address,
         community: "private"
     })
 
+
     return {
         //public variables
-        name: "New Device",
-        type: "ird8200",
+        id:  options.id,
+        type: options.type,
         lock: false,
-        address: addr,
+        address: options.address,
+        inputLabels: options.inputLabels,
         input: null, //Syntax	 INTEGER32 {asi(0), sat_vsb(1),st_input(2), ip(3),auto(4)}
         port: null,
         freq: null,
@@ -88,6 +85,26 @@ var ird8200 = function(addr, clr) {
         symRate: null,
         modulation: null,
         current_service: null,
+        initialized: false,
+        heartbeat_loop: null,
+
+        initialize: function(heartbeatFunction, callback){
+            var this_device = this;
+            this_device.heartbeat_loop = setInterval(function(){
+                var lockStatus = this_device.lock;
+                this_device.getLock(function(updated_device){
+                    // console.log(lockStatus + " vs " + devices[i].lock)
+                    if( updated_device.lock != lockStatus){
+                        heartbeatFunction();
+                    }
+                }, function(){
+                    console.log("cannot get lock status for device " + this_device.id)
+                });
+            }, 1000);
+            this_device.initialized = true;
+            this_device.getStatus();
+            if(typeof callback !== "undefined") callback();
+        },
 
         //public functions
         getAddress: function() {
@@ -106,7 +123,8 @@ var ird8200 = function(addr, clr) {
             var failed = function(){
                 if(fail_sent != true) {
                     fail_sent = true;
-                    return fcb();
+                    if(typeof fcb !== "undefined") return fcb(this_device);
+                    else return function(){};
                 }
             }
             this.getLock(function(device) {
@@ -137,7 +155,7 @@ var ird8200 = function(addr, clr) {
 
             function doCallback() {
                 // console.log("all done")
-                cb(this_device);
+                if(typeof cb !== "undefined") cb(this_device);
             }
         },
 

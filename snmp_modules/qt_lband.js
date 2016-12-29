@@ -43,10 +43,18 @@ var NO_SUCH_INSTANCE = 129;
 var END_OF_MIB_VIEW = 130;
 var PDU = 320;
 
-var qt_lband = function(addr, clr) {
+var qt_lband = function(options) {
+    if( typeof options.address === "undefined"){
+        throw new Error("Addresss missing for ird8200. Please see configuration");
+        return null;
+    }
+    if( typeof options.id === "undefined"){
+        throw new Error("ID missing for ird8200. Please see configuration");
+        return null;
+    }
     //variables that are not accessible outside this scope
     var session = new snmp.Session({
-        host: addr,
+        host: options.address,
         community: "private"
     })
 
@@ -72,12 +80,36 @@ var qt_lband = function(addr, clr) {
 
     return {
         //public variables
-        // type: "ird8200",
-        // lock: false,
-        address: addr,
+        id: options.id,
+        type: options.type,
+        address: options.address,
         inputs: [],
         outputs: [],
 
+        initialize: function(heartbeatFunction, callback){
+            //this device does not have/need a heartbeatFunction. Not Used
+            var this_device = this;
+            this_device.getStatus(function(){
+                this_device.initialized = true;
+                if(typeof callback !== "undefined") callback();
+            });
+        },
+        getStatus: function(cb, fcb) {
+            var oid = ".1.3.6.1.4.1.901.20398.1.2.1.0";
+            var this_device = this;
+            session.get({
+                oid: oid
+            }, function(error, varbinds){
+                if (error) {
+                    if(typeof fcb !== "undefined") fcb(error);
+                } else {
+                    if(this_device.inputs.length < 1){
+                        this_device.loadIO(cb);
+                    }
+                    else if(typeof cb !== "undefined") cb(this_device);
+                }
+            });
+        },
         //public functions
         getAddress: function() {
             return address;
@@ -263,7 +295,7 @@ var qt_lband = function(addr, clr) {
             sync.fiber(function(){
                 var outputs = sync.await(getOutSize(sync.defer() ) );
                 var inputs = sync.await(getInSize(sync.defer() ) );
-                var i; 
+                var i;
                 for(i = 1; i <= outputs; i++ ){
                     this_device.outputs[i-1] = sync.await(this_device.getOutputName(i, sync.defer() ) );
                 }
@@ -273,25 +305,7 @@ var qt_lband = function(addr, clr) {
                 cb(this_device);
             })
 
-        },
-
-        getStatus: function(cb, fcb) {
-            var oid = ".1.3.6.1.4.1.901.20398.1.2.1.0";
-            var this_device = this;
-            session.get({
-                oid: oid
-            }, function(error, varbinds){
-                if (error) {
-                    // console.log(oid + ': ' + error);
-                    fcb(error);
-                } else {
-                    if(this_device.inputs.length < 1){
-                        this_device.loadIO(cb);
-                    }
-                    else cb(this_device);
-                }
-            });
-        },
+        }
     };
 };
 
