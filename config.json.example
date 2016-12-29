@@ -41,66 +41,67 @@
         },
         "panels":
         {
-            "1": {
-                "id": 1,
+            "99": {
+                "id": 99,
                 "name": "Quintech",
                 "type": "qt_simple",
-                "color": "#aa00ff",
+                "color": "#0066bb",
                 "devices": [
                     {
                         "id": 45
                     }
                 ]
             },
-            "55": {
-                "id": 55,
+            "62": {
+                "id": 62,
                 "name": "REM_62",
-                "type": "full_8200",
+                "type": "full_8200_with_qt",
                 "color": "#aa00ff",
                 "devices": [
                     {
                         "id": 44
+                    },
+                    {
+                        "id": 45
                     }
-                ]
+                ],
+                "controlled_output": 2
             },
-            "56": {
-                "id": 56,
+            "64": {
+                "id": 64,
                 "name": "REM_64",
-                "type": "full_8200",
+                "type": "full_8200_with_qt",
                 "color": "#ff00ff",
                 "devices": [
                     {
                         "id": 33
+                    },
+                    {
+                        "id": 45
                     }
-                ]
+                ],
+                "controlled_output": 4
             },
-            "57": {
-                "id": 57,
+            "61": {
+                "id": 61,
                 "name": "REM_61",
-                "type": "full_8200",
-                "color": "#aa00ff",
+                "type": "full_8200_with_qt",
+                "color": "#4000ff",
                 "devices": [
                     {
                         "id": 22
-                    }
-                ]
-            },
-            "58": {
-                "id": 58,
-                "name": "REM_63",
-                "type": "full_8200",
-                "color": "#aa00ff",
-                "devices": [
+                    },
                     {
-                        "id": 11
+                        "id": 45
                     }
-                ]
+                ],
+                "controlled_output": 1
             },
-            "59": {
-                "id": 59,
-                "name": "REM_63 qt",
+            "63": {
+                "id": 63,
+                "name": "REM_63",
                 "type": "full_8200_with_qt",
-                "color": "#aa7722",
+                "color": "#0066bb",
                 "devices": [
                     {
                         "id": 11
