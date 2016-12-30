@@ -10,8 +10,10 @@ router.get('/:id', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id]
     // console.log(device);
     device.getStatus(
-        function(device){
-            res.send(device);
+        function(updated_device){
+    console.log(updated_device);
+
+            res.send(updated_device);
         },
         function(){
             res.status(500).send("get Status failed.")

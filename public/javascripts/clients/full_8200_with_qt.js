@@ -1,29 +1,3 @@
-function getAndFillServices(panel, id){
-    console.log("getting services " + id);
-    $.getJSON("/ird8200s/"+id+"/services", function(json) {
-        panel.find('.service').find('option').remove().end().append('<option></option>');
-        $.each(json.services, function (i, item) {
-            panel.find('.service').append($('<option>', { 
-                value: i,
-                text : item.value 
-            }));
-        });
-        panel.find('.service').val(json.selected);
-    });
-}
-
-function getPanelID(panel_layout){
-
-    try{
-        var id = parseInt(panel_layout.attr('id').replace("panel_", "") );
-        if(isNaN(id)) throw new Error("bad_id");
-        return id;
-    }
-    catch(error){
-        console.error(panel_layout.attr('id') + " does not have the proper id syntax 'panel_<id>'");
-        return -1;
-    }
-}
 
 $('.full_8200_with_qt .status').on('click', function (e) {
     var this_button = $(this);
@@ -33,10 +7,7 @@ $('.full_8200_with_qt .status').on('click', function (e) {
     var irddevice = panels[id].devices[0];
     $.getJSON("/ird8200s/"+irddevice.id, null, function(json) {
         var panel = this_button.closest(".panel_layout");
-        //update panel data
         irddevice = json;
-        //clear no comm
-        //fill form with data
         fill_8200_Panel(panel, json);
     })
     .fail(function() {
@@ -58,22 +29,6 @@ $('.full_8200_with_qt .status').on('click', function (e) {
         this_button.removeClass("btn-danger");
         this_button.html(this_button.html().replace("(NO COMM)", "") + "(NO COMM)")
     })
-    // $.each(panels[id].devices, function(k, v){
-    //     $.getJSON("/ird8200s/"+v.id, null, function(json) {
-    //         var panel = this_button.closest(".panel_layout");
-    //         //update panel data
-    //         panels[id].devices[0] = json;
-    //         //clear no comm
-    //         //fill form with data
-    //         fill_8200_Panel(panel, json);
-    //     })
-    //     .fail(function() {
-    //         this_button.removeClass("btn-success");
-    //         this_button.removeClass("btn-danger");
-    //         this_button.html(this_button.html().replace("(NO COMM)", "") + "(NO COMM)")
-    //     })
-    // })
-   
 });
 
 

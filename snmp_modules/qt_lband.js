@@ -3,53 +3,15 @@ var _ = require('lodash');
 var snmp = require("snmp-native");
 var pad = require("pad-left");
 var sync = require('synchronize')
-var valueTypes = {
-    3: "BITSTRING",
-    65: "COUNTER32",
-    70: "COUNTER64",
-    130: "END_OF_MIB_VIEW",
-    2: "INTEGER",
-    64: "IPADDRESS",
-    129: "NO_SUCH_INSTANCE",
-    128: "NO_SUCH_OBJECT",
-    5: "NULL",
-    4: "OCTETSTRING",
-    6: "OID",
-    68: "OPAQUE",
-    320: "PDU",
-    67: "TIMETICKS",
-    66: "UNSIGNED32",
-    48: "VARBIND"
-};
-
-var INTEGER = 2;
-var BITSTRING = 3;
-var BITS = 4;
-var OCTETSTRING = 4;
-var NULL = 5;
-var OID = 6;
-var SEQUENCE = 48;
-var SEQUENCEOF = 48;
-var VARBIND = 48;
-var IPADDRESS = 64;
-var COUNTER32 = 65;
-var GAUGE32 = 66;
-var UNSIGNED32 = 66;
-var TIMETICKS = 67;
-var OPAQUE = 68;
-var COUNTER64 = 70;
-var NO_SUCH_OBJECT = 128;
-var NO_SUCH_INSTANCE = 129;
-var END_OF_MIB_VIEW = 130;
-var PDU = 320;
+var snmpVars = require('./snmp-vars');
 
 var qt_lband = function(options) {
     if( typeof options.address === "undefined"){
-        throw new Error("Addresss missing for ird8200. Please see configuration");
+        throw new Error("Addresss missing for qt_lband. Please see configuration");
         return null;
     }
     if( typeof options.id === "undefined"){
-        throw new Error("ID missing for ird8200. Please see configuration");
+        throw new Error("ID missing for qt_lband. Please see configuration");
         return null;
     }
     //variables that are not accessible outside this scope
@@ -131,7 +93,7 @@ var qt_lband = function(options) {
                 session.set({
                     oid: oid,
                     value: commandStr,
-                    type: OCTETSTRING
+                    type: snmpVars.OCTETSTRING
                 }, function(error, varbinds) {
                     if (error) {
                         // console.log(oid + ': ' + error);
@@ -151,7 +113,7 @@ var qt_lband = function(options) {
                                 cb(null, varbinds);
                             }
                         });
-                        // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
+                        // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + 	 : ,[varbinds[0].type] + ')');
                     }
                 });
             })
@@ -166,7 +128,7 @@ var qt_lband = function(options) {
                 session.set({
                     oid: oid,
                     value: commandStr,
-                    type: OCTETSTRING
+                    type: snmpVars.OCTETSTRING
                 }, function(error, varbinds) {
                     if (error) {
                         // console.log(oid + ': ' + error);
@@ -188,7 +150,7 @@ var qt_lband = function(options) {
                                 else cb(null, input.toString() );
                             }
                         });
-                        // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + valueTypes[varbinds[0].type] + ')');
+                        // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                     }
                 });
             });
@@ -202,7 +164,7 @@ var qt_lband = function(options) {
                 session.set({
                     oid: oid,
                     value: commandStr,
-                    type: OCTETSTRING
+                    type: snmpVars.OCTETSTRING
                 }, function(error, varbinds) {
                     if (error) {
                         // console.log(oid + ': ' + error);
@@ -235,7 +197,7 @@ var qt_lband = function(options) {
                 session.set({
                     oid: oid,
                     value: commandStr,
-                    type: OCTETSTRING
+                    type: snmpVars.OCTETSTRING
                 }, function(error, varbinds) {
                     if (error) {
                         // console.log(oid + ': ' + error);

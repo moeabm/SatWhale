@@ -2,9 +2,15 @@ include panels.jade
 extends layout
 
 block content
-  each panel in panels
+  - var numPanels = 0;
+  each panel, index in panels
+    - numPanels++
     div.panel.cPanel.col-sm-3(style="background-color: #{panel.color}")
-      div #{panel.name}
       +panelLayout(panel)
   script.
     var panels = !{JSON.stringify(panels)}
+  - var addPanels = 4 - numPanels%4
+  - for (var i = 0; i < addPanels; ++i) {
+    div.panel.cPanel.col-sm-3(style="background-color: green")
+      div.empty_panel.panel_layout
+  - }

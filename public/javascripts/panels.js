@@ -9,11 +9,6 @@ socket.on('disconnect', function(){
     console.log("disconnected from socket io");
 });
 
-
-socket.on('ird8200', function(data){
-    console.log("2got updated ird8200 id: "+ data.id);
-});
-
 //shared jquery listeners
 $('.input').on('change', function (e) {
     var optionSelected = $("option:selected", this);
@@ -28,16 +23,3 @@ $('.input').on('change', function (e) {
     }
 });
 
-//shared functions
-function getPanelID(panel_layout){
-
-    try{
-        var id = parseInt(panel_layout.attr('id').replace("panel_", "") );
-        if(isNaN(id)) throw new Error("bad_id");
-        return id;
-    }
-    catch(error){
-        console.error(panel_layout.attr('id') + " does not have the proper id syntax 'panel_<id>'");
-        return -1;
-    }
-}

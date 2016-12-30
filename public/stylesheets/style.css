@@ -14,8 +14,32 @@ a {
     min-height: 400px;
     height: 400px;
     max-height: 400px;
-    border: 1px black solid;
+    overflow: hidden; 
+
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+0,ffffff+50,ffffff+51,000000+100&0.7+0,0.6+40,0.4+55,0.6+88,0.7+100 */
+    background: -moz-linear-gradient(-45deg,  rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.6) 40%, rgba(255,255,255,0.47) 50%, rgba(255,255,255,0.46) 51%, rgba(234,234,234,0.4) 55%, rgba(62,62,62,0.6) 88%, rgba(0,0,0,0.7) 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(-45deg,  rgba(255,255,255,0.7) 0%,rgba(255,255,255,0.6) 40%,rgba(255,255,255,0.47) 50%,rgba(255,255,255,0.46) 51%,rgba(234,234,234,0.4) 55%,rgba(62,62,62,0.6) 88%,rgba(0,0,0,0.7) 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(135deg,  rgba(255,255,255,0.7) 0%,rgba(255,255,255,0.6) 40%,rgba(255,255,255,0.47) 50%,rgba(255,255,255,0.46) 51%,rgba(234,234,234,0.4) 55%,rgba(62,62,62,0.6) 88%,rgba(0,0,0,0.7) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#b3ffffff', endColorstr='#b3000000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+
+    padding: 0px;
+    margin: 0px 0px 0px 0px !important;
+}
+.panel_layout{
+    padding-top: 20px;
+    padding-bottom: 20px;
     overflow: hidden;
+}
+.full_8200_with_qt, .full_8200, .empty_panel{
+    min-height: 400px;
+    height: 400px;
+    max-height: 400px;
+  }
+
+.qt_simple{
+    min-height: 200px;
+    height: 200px;
+    max-height: 200px;
 }
 
 .nopad{

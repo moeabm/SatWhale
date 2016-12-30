@@ -12,66 +12,6 @@ var io = require('socket.io')(server);
 app.io = io;
 io.on('connection', function(){ console.log("new connection") });
 
-var device_drivers = {
-    ird8200: require('./snmp_modules/ird8200'),
-    qt_lband: require('./snmp_modules/qt_lband')
-}
-
-var config = require('./config.json').config;
-var devices = {};
-var panels = config.panels;
-
-
-//initialize devices
-Object.keys(config.devices).forEach(function(i) {
-    devices[i] = device_drivers[config.devices[i].type](config.devices[i]); //require("./snmp_modules/" + config.devices[i].type)(config.devices[i]);
-    devices[i].initialize(function(){
-        io.emit(config.devices[i].type, devices[i]);
-    });
-    // try{
-    //   devices[i].getStatus(function(){ }, function(){ });
-    // }
-    // catch(e) { }
-    // setInterval(function(){
-    //   try{
-    //     var lockStatus = devices[i].lock;
-    //     if(typeof devices[i].lock == "undefined") throw new Error('device has no lock status field.');
-    //     devices[i].getLock(function(device){
-    //         // console.log(lockStatus + " vs " + devices[i].lock)
-    //         if( devices[i].lock != lockStatus){
-    //             io.emit(config.devices[i].type, devices[i]);
-    //         }
-    //     }, function(){
-    //         console.log("cannot get lock status for device " + devices[i].id)
-    //     });
-    //   }
-    //   catch(e) {
-    //     // console.log(e)
-    //   }
-    // }, 1000);
-});
-
-//initialize panels
-Object.keys(panels).forEach(function(i) {
-    var panel = panels[i];
-    for (j = 0; j < panel.devices.length; j++) {
-        var id = panel.devices[j].id
-        panel.devices[j] = _.filter(devices, x => x.id == id)[0];
-    }
-});
-
-// globals
-app.set('devices', devices);
-app.set('panels', panels);
-
-
-var device_routes = {
-    ird8200: require('./routes/devices/ird8200'),
-    qt_lband: require('./routes/devices/qt_lband')
-}
-//routes
-app.use('/ird8200s', device_routes.ird8200);
-app.use('/qtlbands', device_routes.qt_lband);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -89,6 +29,45 @@ var index = require('./routes/index');
 var users = require('./routes/users');
 app.use('/', index);
 app.use('/users', users);
+
+var device_drivers = {
+    ird8200: require('./snmp_modules/ird8200'),
+    qt_lband: require('./snmp_modules/qt_lband')
+}
+
+var config = require('./config.json').config;
+var devices = {};
+var panels = config.panels;
+
+
+//initialize devices
+Object.keys(config.devices).forEach(function(i) {
+    devices[i] = device_drivers[config.devices[i].type](config.devices[i]); //require("./snmp_modules/" + config.devices[i].type)(config.devices[i]);
+    devices[i].initialize(function(){
+        io.emit(config.devices[i].type, devices[i]);
+    });
+});
+
+//initialize panels
+var transferDevicesToPanels = function(pObject){
+  Object.keys(pObject).forEach(function(i) {
+      var panel = pObject[i];
+      if(typeof panel.subpanels === "undefined")
+        for (j = 0; j < panel.devices.length; j++) {
+            var id = panel.devices[j].id
+            panel.devices[j] = _.filter(devices, x => x.id == id)[0];
+        }
+      else transferDevicesToPanels(panel.subpanels);
+  });
+}
+transferDevicesToPanels(panels);
+// globals
+app.set('devices', devices);
+app.set('panels', panels);
+
+//routes
+app.use('/ird8200s', require('./routes/devices/ird8200'));
+app.use('/qtlbands', require('./routes/devices/qt_lband'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
