@@ -1,6 +1,17 @@
 {
     "config": {
         "devices": {
+            "3": {
+                 "id": 3,
+                 "type": "ird1280",
+                 "address": "192.168.50.153",
+                 "inputLabels": {
+                    "1": "Quintech Out 1",
+                    "2": "Quintech Out 2",
+                    "3": "Quintech Out 3",
+                    "4": "Quintech Out 4"
+                 }
+            },
             "11": {
                  "id": 11,
                  "type": "ird8200",
@@ -41,16 +52,81 @@
         },
         "panels":
         {
+            "98": {
+                "id": 98,
+                "type": "half_panel",
+                "color": "#0066bb",
+                "subpanels": {
+                    "100": {
+                        "id": 100,
+                        "name": "Quintech1",
+                        "type": "qt_simple",
+                        "devices": [
+                            {
+                                "id": 45
+                            }
+                        ]
+                    },
+                    "101": {
+                        "id": 101,
+                        "name": "Quintech2",
+                        "type": "qt_simple",
+                        "devices": [
+                            {
+                                "id": 45
+                            }
+                        ]
+                    }
+                }
+            },
             "99": {
                 "id": 99,
-                "name": "Quintech",
-                "type": "qt_simple",
+                "type": "half_panel",
                 "color": "#0066bb",
-                "devices": [
-                    {
-                        "id": 45
+                "subpanels": {
+                    "102": {
+                        "id": 102,
+                        "name": "DVB-S Symbol Rate Calculator",
+                        "type": "sym_calc",
+                        "devices": [
+                        ]
+                    },
+                    "103": {
+                        "id": 103,
+                        "name": "Frequency to L-Band",
+                        "type": "freq_to_lband",
+                        "devices": [
+                        ]
                     }
-                ]
+                }
+            },
+            "97": {
+                "id": 97,
+                "type": "half_panel",
+                "color": "#0066bb",
+                "subpanels": {
+                    "104": {
+                        "id": 104,
+                        "name": "Frequency to L-Band",
+                        "type": "freq_to_lband",
+                        "devices": [
+                        ]
+                    },
+                    "105": {
+                        "id": 105,
+                        "name": "Frequency to L-Band",
+                        "type": "freq_to_lband",
+                        "devices": [
+                        ]
+                    },
+                    "106": {
+                        "id": 106,
+                        "name": "Frequency to L-Band",
+                        "type": "freq_to_lband",
+                        "devices": [
+                        ]
+                    }
+                }
             },
             "62": {
                 "id": 62,
@@ -111,6 +187,17 @@
                     }
                 ],
                 "controlled_output": 3
+            },
+            "107": {
+                "id": 107,
+                "name": "1280",
+                "type": "full_1280",
+                "color": "#bbaaee",
+                "devices": [
+                    {
+                        "id": 3
+                    }
+                ]
             }
         }
     }
