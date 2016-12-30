@@ -1,14 +1,23 @@
+include panels/full_1280.jade
 include panels/full_8200.jade
 include panels/qt_simple.jade
 include panels/full_8200_with_qt.jade
+include panels/sym_calc.jade
+include panels/freq_to_lband.jade
 mixin panelLayout(panel)
     case panel.type
+        when "full_1280"
+            +full_1280(panel)
         when "full_8200"
             +full_8200(panel)
         when "qt_simple"
             +qt_simple(panel)
         when "full_8200_with_qt"
             +full_8200_with_qt(panel)
+        when "sym_calc"
+            +sym_calc(panel)
+        when "freq_to_lband"
+            +freq_to_lband(panel)
         when "half_panel"
             each subpanel in panel.subpanels
                 +panelLayout(subpanel)

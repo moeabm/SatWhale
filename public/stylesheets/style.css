@@ -42,6 +42,12 @@ a {
     max-height: 200px;
 }
 
+.freq_to_lband{
+    min-height: 133px;
+    height: 133px;
+    max-height: 133px;
+}
+
 .nopad{
     padding: 0px !important;
     padding-top: 0px;
@@ -54,8 +60,8 @@ a {
 }
 
 .row {
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 label, span{

@@ -9,7 +9,7 @@ block content
       +panelLayout(panel)
   script.
     var panels = !{JSON.stringify(panels)}
-  - var addPanels = 4 - numPanels%4
+  - var addPanels = (((-1*numPanels)%4)+4)%4
   - for (var i = 0; i < addPanels; ++i) {
     div.panel.cPanel.col-sm-3(style="background-color: green")
       div.empty_panel.panel_layout

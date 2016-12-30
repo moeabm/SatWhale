@@ -1,0 +1,18 @@
+mixin freq_to_lband(panel)
+    div.freq_to_lband.panel_layout(id="panel_#{panel.id}")
+        div.form-group
+            button.btn.btn-primary.col-xs-12.title.disabled #{panel.name}
+            div.row &nbsp;
+            div.row
+                span.nopad.col-xs-3.col-xs-offset-1
+                    select.form-control.band
+                        option(value="Ku") Ku
+                        option(value="C") C
+                span.nopad.col-xs-5
+                    input.form-control.freq
+                label.nopad.col-xs-3 MHz
+            div.row
+                label.col-xs-4.text-right.text-nowrap L-Band
+                span.nopad.col-xs-5
+                    input.form-control.lfreq
+                label.nopad.col-xs-3 MHz
