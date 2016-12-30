@@ -31,6 +31,7 @@ app.use('/', index);
 app.use('/users', users);
 
 var device_drivers = {
+    ird1280: require('./snmp_modules/ird1280'),
     ird8200: require('./snmp_modules/ird8200'),
     qt_lband: require('./snmp_modules/qt_lband')
 }
@@ -66,6 +67,7 @@ app.set('devices', devices);
 app.set('panels', panels);
 
 //routes
+app.use('/ird1280s', require('./routes/devices/ird1280'));
 app.use('/ird8200s', require('./routes/devices/ird8200'));
 app.use('/qtlbands', require('./routes/devices/qt_lband'));
 

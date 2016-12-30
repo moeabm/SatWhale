@@ -1,0 +1,62 @@
+mixin full_1280(panel)
+    div.full_1280.panel_layout(id="panel_#{panel.id}")
+        div.form-group
+            button.btn.col-xs-12.status #{panel.name}
+            span.sat.nopad.col-xs-6.col-xs-offset-4
+                select.form-control.port
+                    option(value="NA") Select Port
+                    each label, index in panel.devices[0].inputLabels
+                        option(value=index) #{index} - #{label}
+        div.sat
+            div.row &nbsp;
+            div.row
+                label.col-xs-4.text-right.text-nowrap Sat Freq
+                span.nopad.col-xs-4
+                    input.form-control.satFreq
+                label.col-xs-4 MHz
+            div.row
+                label.col-xs-4.text-right.text-nowrap Sym Rate
+                span.nopad.col-xs-4
+                    input.form-control.symRate
+                label.col-xs-4 Msym/s
+            div.row
+                label.col-xs-4.text-right.text-nowrap Modulation
+                div.col-xs-4
+                    .form-check
+                      label.form-check-label
+                        input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=1, checked)
+                        |     BPSK
+                    .form-check
+                      label.form-check-label
+                        input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=2)
+                        |     QPSK
+                div.col-xs-4
+                    .form-check
+                      label.form-check-label
+                        input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=3)
+                        |     8PSK
+                    .form-check
+                      label.form-check-label
+                        input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=3)
+                        |     16QAM
+            div.row
+                label.col-xs-4.text-right.text-nowrap Service
+                span.nopad.col-xs-8
+                    select.form-control.service
+                        option
+            //- div.row
+            //-     label.col-xs-4.text-right.text-nowrap Video
+            //-     span.nopad.col-xs-8
+            //-         select.form-control.videoPid
+            //-             option 
+            //- div.row
+            //-     label.col-xs-4.text-right.text-nowrap Audio
+            //-     span.nopad.col-xs-8
+            //-         select.form-control.audioPid
+            //-             option
+        div.hideable.ip
+            span.col-xs-6.filler
+            label.col-xs-4.text-right.text-nowrap Stream IP:
+            label.col-xs-8.text-nowrap 127.0.0.1
+            label.col-xs-4.text-right.text-nowrap Port:
+            label.col-xs-8.text-nowrap 10041

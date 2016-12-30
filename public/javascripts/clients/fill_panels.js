@@ -124,6 +124,64 @@ function getAndFill8200Services(panel, id){
         });
         panel.find('.service').val(json.selected);
     });
+};
+
+//===================================================================//
+//                          Tandberg 1280                            //
+//                                                                   //
+//when new data comes in fill all panels with 1280 devices attached  //
+//                                                                   //
+//===================================================================//
+socket.on('ird1280', function(data){
+    console.log("got updated ird1280 id: "+ data.id);
+    var iPanels = getPanelsWithDevice(data.id);
+    for(i = 0 ; i < iPanels.length; i++ ){
+        var panel = iPanels[i];
+        var panel_layout = $("#panel_"+panel.id);
+        fill_1280_Panel(panel_layout, data);
+    }
+});
+
+// fill 1280 panel with data  
+function fill_1280_Panel(panel, data){
+    panel.closest(".cPanel").css("background-color", getPanel(getPanelID(panel)).color);
+    panel.find(".status").html(panel.find(".status").html().replace("(NO COMM)", "") );
+    if(data.lock == true){
+        panel.find(".status").addClass("btn-success");
+        panel.find(".status").removeClass("btn-danger");
+        getAndFill1280Services(panel, data.id);
+    }
+    else{
+        panel.find(".status").addClass("btn-danger");
+        panel.find(".status").removeClass("btn-success");
+        panel.find('.service').find('option').remove().end().append('<option></option>');
+    }
+    if(panel.find(".port").val() != data.port)
+        panel.find(".port").val(data.port).change();
+    if(panel.find(".satFreq").val() != data.freq/1000)
+        panel.find(".satFreq").val(data.freq/1000).change();
+    if(panel.find(".symRate").val() != data.symRate/1000)
+        panel.find(".symRate").val(data.symRate/1000000).change();
+    if(panel.find(".symRate").val() != data.symRate/1000)
+        panel.find(".symRate").val(data.symRate/1000000).change();
+    if(panel.find(".modulation:checked").val() != data.modulation)
+        panel.find(".modulation").filter("[value="+data.modulation+"]").prop('checked', true);
+}
+
+
+// fill 1280 panel with services  
+function getAndFill1280Services(panel, id){
+    console.log("getting services " + id);
+    $.getJSON("/ird1280s/"+id+"/services", function(json) {
+        panel.find('.service').find('option').remove().end().append('<option></option>');
+        $.each(json.services, function (i, item) {
+            panel.find('.service').append($('<option>', { 
+                value: i+1,
+                text : item.value 
+            }));
+        });
+        panel.find('.service').val(json.selected);
+    });
 }
 
 //===================================================================//
