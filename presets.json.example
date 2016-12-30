@@ -1,0 +1,41 @@
+/*structure:
+{
+    "device 1":[
+        {
+            "name": "preset Name",
+            "field1": "value",
+            "field2": "value",
+            "field3": "value",
+            "field4": "value",
+            "field5": "value",
+        },
+        {
+            "name": "preset Name 2",
+            "field1": "value",
+            "field2": "value",
+            "field3": "value",
+            "field4": "value",
+            "field5": "value",
+        },
+    ],
+    "device 2":[
+        {
+            "name": "preset Name",
+            "field1": "value",
+            "field2": "value",
+            "field3": "value",
+            "field4": "value",
+            "field5": "value",
+        },
+        {
+            "name": "preset Name 2",
+            "field1": "value",
+            "field2": "value",
+            "field3": "value",
+            "field4": "value",
+            "field5": "value",
+        },
+    ]
+}
+
+    }*/
