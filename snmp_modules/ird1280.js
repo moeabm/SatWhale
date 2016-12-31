@@ -6,12 +6,7 @@ var snmpVars = require('./snmp-vars');
 var shared = require('../shared-functions');
 var presets = require('../presets.json');
 
-function freqToLO(freq) {
-    if (freq < 12700000 && freq > 11700000) return 10750000; //Hz Ku range
-    if (freq < 4200000 && freq > 3625000) return 5150000; //Hz C range
-    console.log("Invalid frequency: " + freq + "Hz");
-    return -1;
-}
+
 
 var ird1280 = function(options) {
 
@@ -70,7 +65,7 @@ var ird1280 = function(options) {
             var this_device = this;
             var newData = {};
             _.extend(newData, this, preset );
-            this.updateStatus(newData, 
+            this.updateStatus(newData,
                 function(data){
                     setTimeout(function(){
                         this_device.setService(preset.current_service, function(){
@@ -166,7 +161,7 @@ var ird1280 = function(options) {
                 this.setPort(newData.port, function() {
                         if (newData.freq != "" && newData.freq != this_device.freq) {
                             console.log("==========Port Changed and freq========");
-                            this_device.setLOFreq(freqToLO(newData.freq), newData.port, function() {
+                            this_device.setLOFreq(shared.freqToLo(newData.freq), newData.port, function() {
                                 this_device.setSatFreq(newData.freq, newData.port, finished, failed)
                             })
                         } else {
@@ -198,7 +193,7 @@ var ird1280 = function(options) {
             } else {
                 if (newData.freq != "" && newData.freq != this_device.freq) {
                     console.log("==========Freq change========");
-                    this_device.setLOFreq(freqToLO(newData.freq), newData.port, function() {
+                    this_device.setLOFreq(shared.freqToLo(newData.freq), newData.port, function() {
                         this_device.setSatFreq(newData.freq, newData.port, finished, fcb)
                     });
                 } else {
@@ -227,23 +222,19 @@ var ird1280 = function(options) {
         isLocked: function() {
             return lock;
         },
-        getLock: function(callback, fcb) {
+        getLock: function(callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.200.4.1.1.0";
-            var device = this;
-            session.get({
-                oid: oid
-            }, function(error, varbinds) {
+            var this_device = this;
+            snmpVars.getOid(session, oid, function(error, varbinds){
                 if (error) {
-                    // console.log(oid + ': ' + error);
-                    fcb();
+                    if(callback) callback(error);
                 } else {
-                    // // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                     if (varbinds[0].type == snmpVars.INTEGER && varbinds[0].value == 2) {
-                        device.lock = true;
+                        this_device.lock = true;
                     } else {
-                        device.lock = false;
+                        this_device.lock = false;
                     }
-                    callback(device);
+                    if(callback) callback(null, this_device.lock);
                 }
             });
         },
@@ -277,20 +268,16 @@ var ird1280 = function(options) {
             }
         },
         getPort: function(callback) {
+            var this_device = this;
             var oid = ".1.3.6.1.4.1.1773.1.3.200.4.3.3.2.1.0";
-            var device = this;
-            session.get({
-                oid: oid
-            }, function(error, varbinds) {
+            snmpVars.getOid(session, oid, function(error, varbinds){
                 if (error) {
-                    // console.log(oid + ': ' + error);
-                    fcb();
+                    if(callback) callback(error);
                 } else {
-                    device.port = varbinds[0].value - 1;  //1280 has port values 2-5
-                    callback(varbinds);
-                    // console.log("get: " + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                    this_device.port = varbinds[0].value - 1;  //1280 has port values 2-5
+                    if(callback) callback(null, this_device.port);
                 }
-            });
+            })
         },
         // snmpVars.INTEGER: 5150000 lnb lo freq
         setLOFreq: function(freq, port, cb, fcb) {
@@ -315,21 +302,17 @@ var ird1280 = function(options) {
                 }
             });
         },
-        getLOFreq: function(port, callback, fcb) {
+        getLOFreq: function(port, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.200.4.3.3.2.2.1.6." + port;
+            var this_device = this;
             var iPort = parseInt(port);
-            if(isNaN(iPort)) return fcb();
-            var device = this;
-            session.get({
-                oid: oid
-            }, function(error, varbinds) {
+            if(isNaN(iPort) && callback) return callback({"error": "Invalid port number: " + port});
+            snmpVars.getOid(session, oid, function(error, varbinds){
                 if (error) {
-                    // console.log(oid + ': ' + error);
-                    fcb();
+                    if(callback) callback(error);
                 } else {
-                    device.loFreq = varbinds[0].value;
-                    // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
-                    callback(varbinds);
+                    this_device.loFreq = varbinds[0].value;
+                    if(callback) callback(null, this_device.loFreq);
                 }
             });
         },
@@ -356,21 +339,17 @@ var ird1280 = function(options) {
                 }
             });
         },
-        getSatFreq: function(port, callback,fcb) {
+        getSatFreq: function(port, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.200.4.3.3.2.2.1.5." + port;
-            var device = this;
+            var this_device = this;
             var iPort = parseInt(port);
-            if(isNaN(iPort)) return fcb();
-            session.get({
-                oid: oid
-            }, function(error, varbinds) {
+            if(isNaN(iPort) && callback) return callback({"error": "Invalid port number: " + port});
+            snmpVars.getOid(session, oid, function(error, varbinds){
                 if (error) {
-                    // console.log(oid + ': ' + error);
-                    fcb();
+                    if(callback) callback(error);
                 } else {
-                    device.freq = varbinds[0].value;
-                    callback(varbinds);
-                    // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                    this_device.freq = varbinds[0].value;
+                    if(callback) callback(null, this_device.freq);
                 }
             });
         },
@@ -399,19 +378,15 @@ var ird1280 = function(options) {
         },
         getSymRate: function(port, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.200.4.3.3.2.2.1.2." + port;
-            var device = this;
+            var this_device = this;
             var iPort = parseInt(port);
-            if(isNaN(iPort)) return fcb();
-            session.get({
-                oid: oid
-            }, function(error, varbinds) {
+            if(isNaN(iPort) && callback) return callback({"error": "Invalid port number: " + port});
+            snmpVars.getOid(session, oid, function(error, varbinds){
                 if (error) {
-                    // console.log(oid + ': ' + error);
-                    fcb();
+                    if(callback) callback(error);
                 } else {
-                    device.symRate = varbinds[0].value;
-                    callback(varbinds);
-                    // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                    this_device.symRate = varbinds[0].value;
+                    if(callback) callback(null, this_device.symRate);
                 }
             });
         },
@@ -423,6 +398,8 @@ var ird1280 = function(options) {
             if(isNaN(iPort)) return fcb();
             var iMod = parseInt(mod);
             if (iMod < 0 || iMod > 3 || isNaN(iMod)) return fcb();
+            // var iMod = parseInt(mod);
+            // if (iMod < 0 || iMod > 3 || isNaN(iMod)) return callback({"error": "Invalid modulation: " + mod});
             session.set({
                 oid: oid,
                 value: iMod,
@@ -441,19 +418,17 @@ var ird1280 = function(options) {
                 }
             });
         },
-        getModulation: function(port, callback, fcb) {
+        getModulation: function(port, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.200.4.3.3.2.2.1.9." + port;
-            var device = this;
-            session.get({
-                oid: oid
-            }, function(error, varbinds) {
+            var this_device = this;
+            var iPort = parseInt(port);
+            if(isNaN(iPort) && callback) return callback({"error": "Invalid port number: " + port});
+            snmpVars.getOid(session, oid, function(error, varbinds){
                 if (error) {
-                    // console.log(oid + ': ' + error);
-                    fcb();
+                    if(callback) callback(error);
                 } else {
-                    device.modulation = varbinds[0].value;
-                    callback(varbinds);
-                    // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                    this_device.modulation = varbinds[0].value;
+                    if(callback) callback(null, this_device.modulation);
                 }
             });
         },
@@ -475,7 +450,7 @@ var ird1280 = function(options) {
                     } else {
                         // console.log("set:" + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                         // callback(device);
-                        
+
                         //validation
                         device.getService(function(retuned_service) {
                             if (retuned_service != varbinds[0].value) {
@@ -490,35 +465,28 @@ var ird1280 = function(options) {
             }
         },
         // snmpVars.INTEGER: service array
-        getService: function(cb,fcb) {
+        getService: function(callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.200.2.4.2.0";
-            var device = this;
-            session.get({
-                oid: oid,
-            }, function(error, varbinds) {
+            var this_device = this;
+            snmpVars.getOid(session, oid, function(error, varbinds){
                 if (error) {
-                    // console.log(oid + ': ' + error);
-                    fcb(error);
+                    if(callback) callback(error);
                 } else {
-                    device.current_service = varbinds[0].value;
-                    // console.log(varbinds);
-                    // console.log("get:" + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
-                    cb(varbinds[0].value);
+                    this_device.current_service = varbinds[0].value;
+                    if(callback) callback(null, this_device.current_service);
                 }
             });
         },
         //TODO: get id array to so you can referece the ID of the service (needed for set service).... 8200s provide the ID with the service name string
-        getServiceArray: function(callback,fcb) {
+        getServiceArray: function(callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.200.2.3.1.3";
             session.getSubtree({
                 oid: oid
             }, function(error, varbinds) {
                 if (error) {
-                    // console.log(oid + ': ' + error);
-                    fcb();
+                    if(callback)callback(error);
                 } else {
-                    callback(varbinds);
-                    // // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                    if(callback)callback(null, varbinds);
                 }
             });
         }

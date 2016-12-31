@@ -19,6 +19,23 @@ module.exports = {
       66: "UNSIGNED32",
       48: "VARBIND"
   },
+  getOid: function(session, oid, callback) {
+      var oid = ".1.3.6.1.4.1.1773.1.3.200.4.3.3.2.1.0";
+      try{
+          session.get({
+              oid: oid
+          }, function(error, varbinds) {
+              if (error) {
+                  callback(error);
+              } else {
+                  callback(varbinds);
+              }
+          });
+      }
+      catch (e){
+          callback(e);
+      }
+  },
 	INTEGER : 2,
 	BITSTRING : 3,
 	BITS : 4,

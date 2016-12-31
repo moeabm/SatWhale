@@ -68,7 +68,7 @@ var qt_lband = function(options) {
             _.extend(newData, this_device, preset );
             this.setCrosspoint(newData.output, newData.input, function(){
                 callback(null, newData);
-            }, 
+            },
             function(error){
                 callback(error, preset);
                 console.log("Failed to set setCrosspoint");
@@ -76,19 +76,17 @@ var qt_lband = function(options) {
             });
         },
 
-        getStatus: function(cb, fcb) {
+        getStatus: function(callback) {
             var oid = ".1.3.6.1.4.1.901.20398.1.2.1.0";
             var this_device = this;
-            session.get({
-                oid: oid
-            }, function(error, varbinds){
+            snmpVars.getOid(session, oid, function(error, varbinds){
                 if (error) {
-                    if(typeof fcb !== "undefined") fcb(error);
+                    if(callback) callback(error);
                 } else {
                     if(this_device.inputs.length < 1){
-                        this_device.loadIO(cb);
+                        this_device.loadIO(callback);
                     }
-                    else if(typeof cb !== "undefined") cb(this_device);
+                    if(callback) callback(null, this_device);
                 }
             });
         },
@@ -120,9 +118,9 @@ var qt_lband = function(options) {
                         releaseLock();
                          if(typeof fcb !== "undefined") fcb();
                     } else {
-                        var getOid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
+                        var oid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
                         session.get({
-                            oid: getOid
+                            oid: oid
                         }, function(error, varbinds){
                             if (error) {
                                 // console.log(oid + ': ' + error);
@@ -155,9 +153,9 @@ var qt_lband = function(options) {
                         releaseLock();
                         fcb();
                     } else {
-                        var getOid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
+                        var oid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
                         session.get({
-                            oid: getOid
+                            oid: oid
                         }, function(error, getVarbinds){
                             if (error) {
                                 // console.log(oid + ': ' + error);
@@ -191,9 +189,9 @@ var qt_lband = function(options) {
                         releaseLock();
                         fcb();
                     } else {
-                        var getOid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
+                        var oid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
                         session.get({
-                            oid: getOid
+                            oid: oid
                         }, function(error, getVarbinds){
                             if (error) {
                                 // console.log(oid + ': ' + error);
@@ -224,9 +222,9 @@ var qt_lband = function(options) {
                         releaseLock();
                         fcb();
                     } else {
-                        var getOid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
+                        var oid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
                         session.get({
-                            oid: getOid
+                            oid: oid
                         }, function(error, getVarbinds){
                             if (error) {
                                 // console.log(oid + ': ' + error);
@@ -246,31 +244,23 @@ var qt_lband = function(options) {
             var this_device = this;
             //get output size
             function getOutSize(callback){
-                var getOid = ".1.3.6.1.4.1.901.20398.1.2.5.0";
-                session.get({
-                    oid: getOid
-                }, function(error, getVarbinds){
+                var oid = ".1.3.6.1.4.1.901.20398.1.2.5.0";
+                snmpVars.getOid(session, oid, function(error, varbinds){
                     if (error) {
-                        // console.log(oid + ': ' + error);
-                        callback(error, "");
+                        if(callback) callback(error);
                     } else {
-                        // console.log(getVarbinds);
-                        callback(null, getVarbinds[0].value);
+                        if(callback) callback(null, varbinds[0].value);
                     }
                 });
             };
             //get input size
             function getInSize(callback){
-                var getOid = ".1.3.6.1.4.1.901.20398.1.2.6.0";
-                session.get({
-                    oid: getOid
-                }, function(error, getVarbinds){
+                var oid = ".1.3.6.1.4.1.901.20398.1.2.6.0";
+                snmpVars.getOid(session, oid, function(error, varbinds){
                     if (error) {
-                        // console.log(oid + ': ' + error);
-                        callback(error, "");
+                        if(callback) callback(error);
                     } else {
-                        // console.log(getVarbinds);
-                        callback(null, getVarbinds[0].value);
+                        if(callback) callback(null, varbinds[0].value);
                     }
                 });
             };
