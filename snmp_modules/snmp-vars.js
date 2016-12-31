@@ -26,9 +26,9 @@ module.exports = {
               oid: oid
           }, function(error, varbinds) {
               if (error) {
-                  callback(error);
+                  if(callback) callback(error);
               } else {
-                  callback(varbinds);
+                  if(callback) callback(null, varbinds);
               }
           });
       }

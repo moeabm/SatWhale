@@ -7,6 +7,9 @@ var snmpVars = require('./snmp-vars');
 var shared = require('../shared-functions');
 var presets = require('../presets.json');
 
+var setCommandOid = ".1.3.6.1.4.1.901.20398.1.1.11.0";
+var getCommandOid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
+
 var qt_lband = function(options) {
     if( typeof options.address === "undefined"){
         throw new Error("Addresss missing for qt_lband. Please see configuration");
@@ -23,18 +26,34 @@ var qt_lband = function(options) {
     })
 
     var locked = false;
-    var getLock = function(cb){
+    var getLock = function(callback){
         sync.fiber(function(){
-            // console.log("WAITING FOR LOCK");
+            // loop until we get lock
             while(locked){
                 sync.await(setTimeout(sync.defer(), 200))
             }
             locked = true;
-            // console.log("GOT LOCK");
-            cb();
+            callback();
             return;
         });
-    }
+    };
+
+    var setCommand =function(commandStr, callback){
+        session.set({
+            oid: setCommandOid,
+            value: commandStr,
+            type: snmpVars.OCTETSTRING
+        }, function(error, varbinds) {
+            if (error) {
+                if(callback) callback(error);
+            } else {
+                if(callback) callback(null, varbinds);
+            }
+        });
+    };
+    var getCommand = function(callback){
+        getOid(session, getCommandOid, callback);
+    };
 
     var releaseLock = function(){
         locked = false;
@@ -101,146 +120,78 @@ var qt_lband = function(options) {
             });
         },
 
-        setCrosspoint: function(output, input, cb, fcb) {
-            var oid = ".1.3.6.1.4.1.901.20398.1.1.11.0";
+        setCrosspoint: function(output, input, callback) {
             var commandStr = "S"+pad(output, 3, '0')+pad(input, 3, '0');
-            if (isNaN(output) && typeof fcb !== "undefined") return fcb({error: "bad output"});
-            if (isNaN(input) && typeof fcb !== "undefined") return fcb({error: "bad input"});
+            if (isNaN(output) && callback) return callback({error: "Bad output: " + output});
+            if (isNaN(input) && callback) return callback({error: "Bad input: " + input});
             sync.fiber(function(){
-                sync.await(getLock(sync.defer()));
-                session.set({
-                    oid: oid,
-                    value: commandStr,
-                    type: snmpVars.OCTETSTRING
-                }, function(error, varbinds) {
-                    if (error) {
-                        // console.log(oid + ': ' + error);
-                        releaseLock();
-                         if(typeof fcb !== "undefined") fcb();
-                    } else {
-                        var oid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
-                        session.get({
-                            oid: oid
-                        }, function(error, varbinds){
-                            if (error) {
-                                // console.log(oid + ': ' + error);
-                                releaseLock();
-                                if(typeof fcb !== "undefined")fcb(error);
-                            } else {
-                                releaseLock();
-                                if(typeof cb !== "undefined")cb(null, varbinds);
-                            }
-                        });
-                        // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + 	 : ,[varbinds[0].type] + ')');
-                    }
-                });
+                try{
+                    sync.await(getLock(sync.defer()));
+                    sync.await(setCommand(commandStr, sync.defer() ) );
+                    var varbinds = sync.await(getCommand(sync.defer() ) );
+                    releaseLock();
+                    if(callback) callback(null, varbinds[0]);
+                }
+                catch (e){
+                    releaseLock();
+                    if(callback) callback(e);
+                }
             })
         },
 
-        getOutputStatus: function(output, cb, fcb) {
-            var oid = ".1.3.6.1.4.1.901.20398.1.1.11.0";
+        getOutputStatus: function(output, callback) {
             var commandStr = "O"+pad(output, 3, '0');
-            if (isNaN(output)) return fcb();
+            if (isNaN(output) && callback) return callback({error: "Bad output: " + output});
             sync.fiber(function(){
-                sync.await(getLock(sync.defer()));
-                session.set({
-                    oid: oid,
-                    value: commandStr,
-                    type: snmpVars.OCTETSTRING
-                }, function(error, varbinds) {
-                    if (error) {
-                        // console.log(oid + ': ' + error);
-                        releaseLock();
-                        fcb();
-                    } else {
-                        var oid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
-                        session.get({
-                            oid: oid
-                        }, function(error, getVarbinds){
-                            if (error) {
-                                // console.log(oid + ': ' + error);
-                                releaseLock();
-                                fcb(error);
-                            } else {
-                                releaseLock();
-                                var input = parseInt(getVarbinds[0].value.replace(/\D/, "") )
-                                if(isNaN(input) ) return fcb();
-                                else cb(null, input.toString() );
-                            }
-                        });
-                        // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
-                    }
-                });
+                try{
+                    sync.await(getLock(sync.defer()));
+                    sync.await(setCommand(commandStr, sync.defer() ) );
+                    var varbinds = sync.await(getCommand(sync.defer() ) );
+                    releaseLock();
+                    if(callback) callback(null, varbinds[0].value.replace(/\D/, ""));
+                }
+                catch (e){
+                    releaseLock();
+                    if(callback) callback(e);
+                }
             });
         },
-        getOutputName: function(output, cb, fcb) {
-            var oid = ".1.3.6.1.4.1.901.20398.1.1.11.0";
-            var commandStr = "NRO"+pad(output, 3, '0');
-            if (isNaN(output)) return fcb();
-            sync.fiber(function(){
-                sync.await(getLock(sync.defer()));
-                session.set({
-                    oid: oid,
-                    value: commandStr,
-                    type: snmpVars.OCTETSTRING
-                }, function(error, varbinds) {
-                    if (error) {
-                        // console.log(oid + ': ' + error);
-                        releaseLock();
-                        fcb();
-                    } else {
-                        var oid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
-                        session.get({
-                            oid: oid
-                        }, function(error, getVarbinds){
-                            if (error) {
-                                // console.log(oid + ': ' + error);
-                                releaseLock();
-                                fcb(error);
-                            } else {
-                                releaseLock();
-                                cb(null, getVarbinds[0].value.replace(commandStr, "").replace(/\"/, ""));
-                            }
-                        });
-                    }
-                });
-            });
-        },
-        getInputName: function(input, cb, fcb) {
-            var oid = ".1.3.6.1.4.1.901.20398.1.1.11.0";
-            var commandStr = "NRI"+pad(input, 3, '0');
-            if (isNaN(input)) return fcb();
-            sync.fiber(function(){
-                sync.await(getLock(sync.defer()));
-                session.set({
-                    oid: oid,
-                    value: commandStr,
-                    type: snmpVars.OCTETSTRING
-                }, function(error, varbinds) {
-                    if (error) {
-                        // console.log(oid + ': ' + error);
-                        releaseLock();
-                        fcb();
-                    } else {
-                        var oid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
-                        session.get({
-                            oid: oid
-                        }, function(error, getVarbinds){
-                            if (error) {
-                                // console.log(oid + ': ' + error);
-                                releaseLock();
-                                fcb(error);
-                            } else {
-                                releaseLock();
-                                cb(null, getVarbinds[0].value.replace(commandStr, "").replace(/\"/, ""));
-                            }
-                        });
-                    }
-                });
-            });
-        },
-        loadIO: function(cb, fcb) {
 
+        getOutputName: function(output, callback) {
+            var commandStr = "NRO"+pad(output, 3, '0');
+            if (isNaN(output) && callback) return callback({error: "Bad output: " + output});
+            sync.fiber(function(){
+                try{
+                    sync.await(getLock(sync.defer()));
+                    sync.await(setCommand(commandStr, sync.defer() ) );
+                    var varbinds = sync.await(getCommand(sync.defer() ) );
+                    releaseLock();
+                    if(callback) callback(null, varbinds[0].value.replace(commandStr, "").replace(/\"/, ""));
+                }
+                catch (e){
+                    releaseLock();
+                    if(callback) callback(e);
+                }
+            });
+        },
+        getInputName: function(input, callback) {
+            var commandStr = "NRI"+pad(input, 3, '0');
+            if (isNaN(input) && callback) return callback({error: "Bad input: " + input});
+            sync.fiber(function(){
+                try{
+                    sync.await(getLock(sync.defer()));
+                    sync.await(setCommand(commandStr, sync.defer() ) );
+                    var varbinds = sync.await(getCommand(sync.defer() ) );
+                    releaseLock();
+                    if(callback) callback(null, varbinds[0].value.replace(commandStr, "").replace(/\"/, ""));
+                }
+                catch (e){
+                    releaseLock();
+                    if(callback) callback(e);
+                }
+            });
+        },
+        loadIO: function(callback) {
             var this_device = this;
             //get output size
             function getOutSize(callback){
@@ -265,17 +216,23 @@ var qt_lband = function(options) {
                 });
             };
             sync.fiber(function(){
-                var outputs = sync.await(getOutSize(sync.defer() ) );
-                var inputs = sync.await(getInSize(sync.defer() ) );
-                var i;
-                for(i = 1; i <= outputs; i++ ){
-                    this_device.outputs[i-1] = sync.await(this_device.getOutputName(i, sync.defer() ) );
+                try{
+                    var outputs = sync.await(getOutSize(sync.defer() ) );
+                    var inputs = sync.await(getInSize(sync.defer() ) );
+                    var i;
+                    for(i = 1; i <= outputs; i++ ){
+                        this_device.outputs[i-1] = sync.await(this_device.getOutputName(i, sync.defer() ) );
+                    }
+                    for(i = 1; i <= inputs; i++ ){
+                        this_device.inputs[i-1] = sync.await(this_device.getInputName(i, sync.defer() ) );
+                    }
+                    callback(this_device);
                 }
-                for(i = 1; i <= inputs; i++ ){
-                    this_device.inputs[i-1] = sync.await(this_device.getInputName(i, sync.defer() ) );
+                catch (e){
+                    releaseLock(); // just in case we throw error in lock state
+                    if(callback) callback(e);
                 }
-                cb(this_device);
-            })
+            });
 
         }
     };
