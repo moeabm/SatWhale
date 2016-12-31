@@ -11,7 +11,6 @@ router.get('/:id', function(req, res, next) {
     // console.log(device);
     device.getStatus(
         function(updated_device){
-    console.log(updated_device);
 
             res.send(updated_device);
         },
@@ -48,8 +47,8 @@ router.get('/:id/services', function(req, res, next) {
         device.getService(function(currentService){
             res.send({services: services, selected: currentService});
         },
-        function(){
-            res.status(500).send("get service failed.")
+        function(error){
+            res.status(500).send({error: error, message:"get service failed."})
         });
     },
     function(){
@@ -65,8 +64,8 @@ router.post('/:id/services', function(req, res, next) {
         io.emit('ird8200', udpated_device);
         res.send("updated");
     },
-    function(){
-        res.status(500).send("set service failed.")
+    function(error){
+        res.status(500).send({error: error, message:"set service failed."})
     });
 });
 

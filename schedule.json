@@ -1,0 +1,32 @@
+[
+    {
+        "device" : "11",
+        "preset" : "ABC NewsOne",
+        "time" : "10 * * * * *"
+    },
+    {
+        "device" : "11",
+        "preset" : "ABC NewsOne",
+        "time" : "40 * * * * *"
+    },
+    {
+        "device" : "3",
+        "preset" : "12011",
+        "time" : "10 * * * * *"
+    },
+    {
+        "device" : "3",
+        "preset" : "12011",
+        "time" : "40 * * * * *"
+    },
+    {
+        "device" : "45",
+        "preset" : "change qt out3->in3",
+        "time" : "40 * * * * *"
+    },
+    {
+        "device" : "45",
+        "preset" : "change qt out3->in3",
+        "time" : "10 * * * * *"
+    }
+]

@@ -3,6 +3,8 @@ var _ = require('lodash');
 var snmp = require("snmp-native");
 var io
 var snmpVars = require('./snmp-vars');
+var shared = require('../shared-functions');
+var presets = require('../presets.json');
 
 function freqToLO(freq) {
     if (freq < 12700000 && freq > 11700000) return 10750000; //Hz Ku range
@@ -21,7 +23,6 @@ var ird1280 = function(options) {
         throw new Error("ID missing for ird1280. Please see configuration");
         return null;
     }
-                    console.log(options)
     //variables that are not accessible outside this scope
     var session = new snmp.Session({
         host: options.address,
@@ -34,6 +35,7 @@ var ird1280 = function(options) {
     return {
         //public variables
         id:  options.id,
+        name: options.name,
         type: options.type,
         lock: false,
         address: options.address,
@@ -61,6 +63,30 @@ var ird1280 = function(options) {
             this_device.initialized = true;
             this_device.getStatus();
             if(typeof callback !== "undefined") callback();
+        },
+
+        callPreset: function(presetName, callback){
+            var preset = shared.findPreset(presets[this.id], presetName);
+            var this_device = this;
+            var newData = {};
+            _.extend(newData, this, preset );
+            this.updateStatus(newData, 
+                function(data){
+                    setTimeout(function(){
+                        this_device.setService(preset.current_service, function(){
+                            callback(null, this_device);
+                        }, function(error){
+                            console.log({error: error, message: "Update service failed on preset call 1280"});
+                            // console.log(error);
+                            callback(null, this_device);
+                        });
+                    }, 2000);
+                },
+                function(error){
+                    console.log(error);
+                    console.log("Update status failed on preset call 1280");
+                }
+            )
         },
 
         stopHeartbeat: function(){
@@ -238,7 +264,7 @@ var ird1280 = function(options) {
                         fcb();
                     } else {
                         //validation
-                        console.log("set: " + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                        // console.log("set: " + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                         device.getPort(function(returned_varbinds) { // this will set the local variable with the returned value
                             if (returned_varbinds[0].value != varbinds[0].value) {
                                 fcb(device);
@@ -262,7 +288,7 @@ var ird1280 = function(options) {
                 } else {
                     device.port = varbinds[0].value - 1;  //1280 has port values 2-5
                     callback(varbinds);
-                    console.log("get: " + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                    // console.log("get: " + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                 }
             });
         },
@@ -280,11 +306,11 @@ var ird1280 = function(options) {
                 type: snmpVars.INTEGER
             }, function(error, varbinds) {
                 if (error) {
-                    console.log(oid + ': ' + error);
+                    // console.log(oid + ': ' + error);
                     if(typeof fcb !== "undefined") fcb(error);
                 } else {
                     device.loFreq = varbinds[0].value;
-                    console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                    // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                     cb();
                 }
             });
@@ -325,7 +351,7 @@ var ird1280 = function(options) {
                     fcb();
                 } else {
                     device.freq = varbinds[0].value;
-                    console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                    // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                     cb();
                 }
             });
@@ -436,8 +462,7 @@ var ird1280 = function(options) {
             var oid = ".1.3.6.1.4.1.1773.1.3.200.2.4.2.0";
             var device = this;
             var iService = parseInt(service);
-            console.log(iService)
-            if(isNaN(iService)) return fcb();
+            if(isNaN(iService)) return fcb({error: "bad service id " + service});
             try {
                 session.set({
                     oid: oid,
@@ -446,10 +471,11 @@ var ird1280 = function(options) {
                 }, function(error, varbinds) {
                     if (error) {
                         // console.log(oid + ': ' + error);
-                    fcb(error);
+                        fcb(error);
                     } else {
-                        console.log("set:" + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                        // console.log("set:" + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                         // callback(device);
+                        
                         //validation
                         device.getService(function(retuned_service) {
                             if (retuned_service != varbinds[0].value) {
@@ -476,11 +502,12 @@ var ird1280 = function(options) {
                 } else {
                     device.current_service = varbinds[0].value;
                     // console.log(varbinds);
-                    console.log("get:" + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                    // console.log("get:" + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                     cb(varbinds[0].value);
                 }
             });
         },
+        //TODO: get id array to so you can referece the ID of the service (needed for set service).... 8200s provide the ID with the service name string
         getServiceArray: function(callback,fcb) {
             var oid = ".1.3.6.1.4.1.1773.1.3.200.2.3.1.3";
             session.getSubtree({

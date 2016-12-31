@@ -4,6 +4,8 @@ var snmp = require("snmp-native");
 var pad = require("pad-left");
 var sync = require('synchronize')
 var snmpVars = require('./snmp-vars');
+var shared = require('../shared-functions');
+var presets = require('../presets.json');
 
 var qt_lband = function(options) {
     if( typeof options.address === "undefined"){
@@ -23,12 +25,12 @@ var qt_lband = function(options) {
     var locked = false;
     var getLock = function(cb){
         sync.fiber(function(){
-            console.log("WAITING FOR LOCK");
+            // console.log("WAITING FOR LOCK");
             while(locked){
                 sync.await(setTimeout(sync.defer(), 200))
             }
             locked = true;
-            console.log("GOT LOCK");
+            // console.log("GOT LOCK");
             cb();
             return;
         });
@@ -36,13 +38,14 @@ var qt_lband = function(options) {
 
     var releaseLock = function(){
         locked = false;
-        console.log("LOCK RELEASED");
+        // console.log("LOCK RELEASED");
         return;
     }
 
     return {
         //public variables
         id: options.id,
+        name: options.name,
         type: options.type,
         address: options.address,
         inputs: [],
@@ -56,6 +59,23 @@ var qt_lband = function(options) {
                 if(typeof callback !== "undefined") callback();
             });
         },
+
+
+        callPreset: function(presetName, callback){
+            var preset = shared.findPreset(presets[this.id], presetName);
+            var this_device = this;
+            var newData = {};
+            _.extend(newData, this_device, preset );
+            this.setCrosspoint(newData.output, newData.input, function(){
+                callback(null, newData);
+            }, 
+            function(error){
+                callback(error, preset);
+                console.log("Failed to set setCrosspoint");
+                console.log(error);
+            });
+        },
+
         getStatus: function(cb, fcb) {
             var oid = ".1.3.6.1.4.1.901.20398.1.2.1.0";
             var this_device = this;
@@ -86,8 +106,8 @@ var qt_lband = function(options) {
         setCrosspoint: function(output, input, cb, fcb) {
             var oid = ".1.3.6.1.4.1.901.20398.1.1.11.0";
             var commandStr = "S"+pad(output, 3, '0')+pad(input, 3, '0');
-            if (isNaN(output)) return fcb();
-            if (isNaN(input)) return fcb();
+            if (isNaN(output) && typeof fcb !== "undefined") return fcb({error: "bad output"});
+            if (isNaN(input) && typeof fcb !== "undefined") return fcb({error: "bad input"});
             sync.fiber(function(){
                 sync.await(getLock(sync.defer()));
                 session.set({
@@ -98,7 +118,7 @@ var qt_lband = function(options) {
                     if (error) {
                         // console.log(oid + ': ' + error);
                         releaseLock();
-                        fcb();
+                         if(typeof fcb !== "undefined") fcb();
                     } else {
                         var getOid = ".1.3.6.1.4.1.901.20398.1.2.11.0";
                         session.get({
@@ -107,10 +127,10 @@ var qt_lband = function(options) {
                             if (error) {
                                 // console.log(oid + ': ' + error);
                                 releaseLock();
-                                fcb(error);
+                                if(typeof fcb !== "undefined")fcb(error);
                             } else {
                                 releaseLock();
-                                cb(null, varbinds);
+                                if(typeof cb !== "undefined")cb(null, varbinds);
                             }
                         });
                         // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + 	 : ,[varbinds[0].type] + ')');

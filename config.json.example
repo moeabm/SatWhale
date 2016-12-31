@@ -2,7 +2,8 @@
     "config": {
         "devices": {
             "3": {
-                 "id": 3,
+                 "id": 3, // needs to match key
+                 "name": "ird1280", // needs to be unique
                  "type": "ird1280",
                  "address": "192.168.50.153",
                  "inputLabels": {
@@ -14,6 +15,7 @@
             },
             "11": {
                  "id": 11,
+                 "name": "REM_63",
                  "type": "ird8200",
                  "address": "192.168.50.148",
                  "inputLabels": {
@@ -22,6 +24,7 @@
             },
             "22": {
                  "id": 22,
+                 "name": "REM_61",
                  "type": "ird8200",
                  "address": "192.168.50.155",
                  "inputLabels": {
@@ -30,6 +33,7 @@
             },
             "33": {
                  "id": 33,
+                 "name": "REM_64",
                  "type": "ird8200",
                  "address": "192.168.50.159",
                  "inputLabels": {
@@ -38,6 +42,7 @@
             },
             "44": {
                  "id": 44,
+                 "name": "REM_62",
                  "type": "ird8200",
                  "address": "192.168.50.157",
                  "inputLabels": {
@@ -46,6 +51,7 @@
             },
             "45": {
                  "id": 45,
+                 "name": "Quintech",
                  "type": "qt_lband",
                  "address": "192.168.50.149"
             }

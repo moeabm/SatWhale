@@ -18,10 +18,12 @@
     [
         {
             "device" : "Name 1",
+            "preset" : "Preset Name",
             "time" : "00 42 * * * *" -- run on the 42nd minute of every hour
         },
         {
             "device" : "Name 2",
+            "preset" : "Preset Name",
             "time" : "00 00 5 * * 0" -- run at 5am on sundays (0 - 7) (0 or 7 is Sun)
         },
     ]

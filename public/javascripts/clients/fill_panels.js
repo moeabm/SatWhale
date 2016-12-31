@@ -118,7 +118,7 @@ function getAndFill8200Services(panel, id){
         panel.find('.service').find('option').remove().end().append('<option></option>');
         $.each(json.services, function (i, item) {
             panel.find('.service').append($('<option>', { 
-                value: i,
+                value: item.value.replace(/\s*(\d*)+\s*.*/, "$1"),
                 text : item.value 
             }));
         });
@@ -192,7 +192,7 @@ function getAndFill1280Services(panel, id){
 //===================================================================//
 socket.on('qt_lband', function(data){
     console.log("got updated qtlband id: "+ data.id);
-
+    console.log(data);
     var iPanels = getPanelsWithDevice(data.id);
     for(i = 0 ; i < iPanels.length; i++ ){
         var panel = iPanels[i];

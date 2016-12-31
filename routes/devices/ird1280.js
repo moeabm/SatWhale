@@ -11,7 +11,6 @@ router.get('/:id', function(req, res, next) {
     // console.log(device);
     device.getStatus(
         function(updated_device){
-    console.log(updated_device);
 
             res.send(updated_device);
         },
@@ -60,7 +59,7 @@ router.get('/:id/services', function(req, res, next) {
 router.post('/:id/services', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id];
     var service = req.body.current_service
-    console.log("setting service to " + service)
+    // console.log("setting service to " + service)
     var io = req.app.io;
     device.setService(service, function(udpated_device){
         io.emit('ird1280', udpated_device);

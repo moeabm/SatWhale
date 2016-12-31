@@ -17,6 +17,7 @@
     "jade": "~1.11.0",
     "lodash": "^4.17.2",
     "morgan": "~1.7.0",
+    "node-schedule": "^1.2.0",
     "pad-left": "^2.1.0",
     "serve-favicon": "~2.3.0",
     "snmp-native": "^1.0.21",

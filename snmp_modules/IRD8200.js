@@ -3,6 +3,8 @@ var _ = require('lodash');
 var snmp = require("snmp-native");
 var io
 var snmpVars = require('./snmp-vars');
+var shared = require('../shared-functions');
+var presets = require('../presets.json');
 
 var ASI = 0;
 var SAT = 1;
@@ -33,10 +35,13 @@ var ird8200 = function(options) {
     })
 
     var heartbeat_loop = null;
+    var set_service_tries_limit = 10;
+    var set_service_tries = 0;
 
     return {
         //public variables
         id:  options.id,
+        name: options.name,
         type: options.type,
         lock: false,
         address: options.address,
@@ -68,6 +73,32 @@ var ird8200 = function(options) {
             if(typeof callback !== "undefined") callback();
         },
 
+        callPreset: function(presetName, callback){
+            var preset = shared.findPreset(presets[this.id], presetName);
+            var this_device = this;
+            var newData = {};
+            _.extend(newData, this, preset );
+            this.updateStatus(newData, 
+                function(data){
+                    // console.log(data);
+                    console.log("Update status success");
+                    setTimeout(function(){
+                        this_device.setService(preset.current_service, function(){
+                            console.log("Update status and service success");
+                            callback(null, this_device);
+                        }, function(error){
+                            console.log({error: error, message: "Update status failed on preset call 8200"});
+                            callback(null, this_device);
+                        });
+                    }, 2000);
+                },
+                function(error){
+                    console.log(error);
+                    console.log("Update status failed on preset call");
+                }
+            )
+        },
+
         stopHeartbeat: function(){
             if(heartbeat_loop != null)
                 clearInterval(heartbeat_loop);
@@ -96,16 +127,14 @@ var ird8200 = function(options) {
             }
             this.getLock(function(device) {
                 finished();
-            }, function() {
-                return failed();
-            });
+            }, failed);
             this.getInput(function(device) {
                 if (this_device.input == SAT) {
                     this_device.getPort(function(device) {
-                        this_device.getSatFreq(this_device.port, finished, finished);
-                        this_device.getLOFreq(this_device.port, finished, finished);
-                        this_device.getSymRate(this_device.port, finished, finished);
-                        this_device.getModulation(this_device.port, finished, finished);
+                        this_device.getSatFreq(this_device.port, finished, failed);
+                        this_device.getLOFreq(this_device.port, finished, failed);
+                        this_device.getSymRate(this_device.port, finished, failed);
+                        this_device.getModulation(this_device.port, finished, failed);
                     }, function() {
                         finished();
                         finished();
@@ -217,7 +246,7 @@ var ird8200 = function(options) {
             }
 
             function doCallback() {
-                cb(this_device);
+                if(typeof cb !== "undefined") cb(this_device);
             }
         },
         isLocked: function() {
@@ -231,7 +260,7 @@ var ird8200 = function(options) {
             }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    fcb();
+                    if(typeof fcb !== "undefined") fcb();
                 } else {
                     // // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                     if (varbinds[0].type == snmpVars.OCTETSTRING && varbinds[0].value == "LOCKED") {
@@ -239,7 +268,7 @@ var ird8200 = function(options) {
                     } else {
                         device.lock = false;
                     }
-                    callback(device);
+                    if(typeof callback !== "undefined") callback(device);
                 }
             });
         },
@@ -256,11 +285,11 @@ var ird8200 = function(options) {
             }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    fcb();
+                    if(typeof fcb !== "undefined") fcb();
                 } else {
                     device.input = input;
-                    cb();
-                    console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                    if(typeof cb !== "undefined") cb();
+                    // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                 }
             });
         },
@@ -272,10 +301,10 @@ var ird8200 = function(options) {
             }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    fcb();
+                    if(typeof fcb !== "undefined") fcb();
                 } else {
                     device.input = varbinds[0].value;
-                    callback(varbinds);
+                    if(typeof callback !== "undefined")  callback(varbinds);
                     // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                 }
             });
@@ -294,10 +323,10 @@ var ird8200 = function(options) {
                 }, function(error, varbinds) {
                     if (error) {
                         // console.log(oid + ': ' + error);
-                        fcb();
+                        if(typeof fcb !== "undefined") fcb();
                     } else {
                         //validation
-                        console.log("set: " + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                        // console.log("set: " + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                         device.getPort(function(returned_varbinds) { // this will set the local variable with the returned value
                             if (returned_varbinds[0].value != varbinds[0].value) {
                                 fcb(device);
@@ -317,11 +346,11 @@ var ird8200 = function(options) {
             }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    fcb();
+                    if(typeof fcb !== "undefined") fcb();
                 } else {
                     device.port = varbinds[0].value + 1;
-                    callback(varbinds);
-                    console.log("get: " + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                    if(typeof callback !== "undefined") callback(varbinds);
+                    // console.log("get: " + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                 }
             });
         },
@@ -340,11 +369,11 @@ var ird8200 = function(options) {
             }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    fcb();
+                    if(typeof fcb !== "undefined") fcb();
                 } else {
                     device.loFreq = varbinds[0].value;
-                    console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
-                    cb();
+                    // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                    if(typeof cb !== "undefined") cb();
                 }
             });
         },
@@ -358,11 +387,11 @@ var ird8200 = function(options) {
             }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    fcb();
+                    if(typeof fcb !== "undefined") fcb();
                 } else {
                     device.loFreq = varbinds[0].value;
                     // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
-                    callback(varbinds);
+                    if(typeof callback !== "undefined") callback(varbinds);
                 }
             });
         },
@@ -381,11 +410,11 @@ var ird8200 = function(options) {
             }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    fcb();
+                    if(typeof fcb !== "undefined") fcb();
                 } else {
                     device.freq = varbinds[0].value;
-                    console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
-                    cb();
+                    // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
+                    if(typeof cb !== "undefined") cb();
                 }
             });
         },
@@ -399,10 +428,10 @@ var ird8200 = function(options) {
             }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    fcb();
+                    if(typeof fcb !== "undefined") fcb();
                 } else {
                     device.freq = varbinds[0].value;
-                    callback(varbinds);
+                    if(typeof callback !== "undefined") callback(varbinds);
                     // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                 }
             });
@@ -422,11 +451,11 @@ var ird8200 = function(options) {
             }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    fcb();
+                    if(typeof fcb !== "undefined") fcb();
                 } else {
                     device.symRate = varbinds[0].value;
                     // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
-                    cb();
+                    if(typeof cb !== "undefined") cb();
                 }
             });
         },
@@ -440,10 +469,10 @@ var ird8200 = function(options) {
             }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    fcb();
+                    if(typeof fcb !== "undefined") fcb();
                 } else {
                     device.symRate = varbinds[0].value;
-                    callback(varbinds);
+                    if(typeof callback !== "undefined") callback(varbinds);
                     // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                 }
             });
@@ -463,13 +492,13 @@ var ird8200 = function(options) {
             }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    fcb();
+                    if(typeof fcb !== "undefined") fcb();
                 } else {
 
                     device.getModulation(port, function(varbinds) {
                         device.modulation = varbinds[0].value;
                         // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
-                        cb();
+                        if(typeof cb !== "undefined") cb();
                     });
                 }
             });
@@ -482,10 +511,10 @@ var ird8200 = function(options) {
             }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    fcb();
+                    if(typeof fcb !== "undefined") fcb();
                 } else {
                     device.modulation = varbinds[0].value;
-                    callback(varbinds);
+                    if(typeof callback !== "undefined") callback(varbinds);
                     // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                 }
             });
@@ -495,7 +524,7 @@ var ird8200 = function(options) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.4.1.2.0";
             var device = this;
             var iService = parseInt(service);
-            if(isNaN(iService)) return fcb();
+            if(isNaN(iService)) return fcb({error: "bad service id", id: service});
             try {
                 session.set({
                     oid: oid,
@@ -503,21 +532,24 @@ var ird8200 = function(options) {
                     type: snmpVars.INTEGER
                 }, function(error, varbinds) {
                     if (error) {
-                        // console.log(oid + ': ' + error);
-                        fcb();
+                        if(typeof fcb !== "undefined") fcb(error);
                     } else {
-                        console.log("set:" + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
-                        // callback(device);
                         //validation
-                        device.getService(function(retuned_service) {
-                            if (retuned_service != varbinds[0].value) {
-                                //try again
-                                device.setService(service, callback);
-                            } else callback(device);
-                        });
+                        device.getService( function(retuned_service) {
+                            if (retuned_service != varbinds[0].value ){
+                                if(set_service_tries++ < set_service_tries_limit)
+                                    device.setService(service, callback);
+                                else if(typeof fcb !== "undefined") fcb({error: "Max set service tries exceeded."});
+                            }
+                            else {
+                                set_service_tries = 0;
+                                if(typeof callback !== "undefined") callback(device);
+                            }
+                        }, fcb);
                     }
                 });
             } catch (e) {
+                if(typeof fcb !== "undefined") fcb(error);
                 console.error(e);
             }
         },
@@ -530,12 +562,10 @@ var ird8200 = function(options) {
             }, function(error, varbinds) {
                 if (error) {
                     // console.log(oid + ': ' + error);
-                    fcb();
+                    if(typeof fcb !== "undefined") fcb(error);
                 } else {
                     device.current_service = varbinds[0].value;
-                    // console.log(varbinds);
-                    console.log("get:" + varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
-                    cb(varbinds[0].value);
+                    if(typeof cb !== "undefined") cb(varbinds[0].value);
                 }
             });
         },
@@ -548,7 +578,7 @@ var ird8200 = function(options) {
                     // console.log(oid + ': ' + error);
                     fcb();
                 } else {
-                    callback(varbinds);
+                    if(typeof callback !== "undefined") callback(varbinds);
                     // // console.log(varbinds[0].oid + ' = ' + varbinds[0].value + ' (' + snmpVars.valueTypes[varbinds[0].type] + ')');
                 }
             });

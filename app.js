@@ -66,6 +66,8 @@ transferDevicesToPanels(panels);
 app.set('devices', devices);
 app.set('panels', panels);
 
+var preset_scheduler = require('./preset-scheduler')(app);
+
 //routes
 app.use('/ird1280s', require('./routes/devices/ird1280'));
 app.use('/ird8200s', require('./routes/devices/ird8200'));
