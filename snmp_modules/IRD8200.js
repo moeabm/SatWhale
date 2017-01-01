@@ -277,7 +277,7 @@ var ird8200 = function(options) {
             var device = this;
             var iPort = parseInt(port) - 1;
             if ( (iPort < 0 || iPort > 3 || isNaN(iPort)) && callback) return callback({"error": "Invalid port number: " + port});
-            smbpVars.setOid(session, oid, iPort, snmpVars.INTEGER, function(error, varbinds) {
+            snmpVars.setOid(session, oid, iPort, snmpVars.INTEGER, function(error, varbinds) {
                 if (error) {
                     if(callback) callback(error);
                 } else {
