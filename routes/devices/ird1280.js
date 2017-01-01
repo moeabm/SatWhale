@@ -9,15 +9,10 @@ router.get('/', function(req, res, next) {
 router.get('/:id', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id]
     // console.log(device);
-    device.getStatus(
-        function(updated_device){
-
-            res.send(updated_device);
-        },
-        function(){
-            res.status(500).send("get Status failed.")
-        }
-    )
+    device.getStatus(function(error, updated_device){
+        if(error) res.status(500).send(error)
+        else res.send(updated_device);
+    });
 });
 
 router.post('/:id', function(req, res, next) {
@@ -25,49 +20,39 @@ router.post('/:id', function(req, res, next) {
     var updatedDevice = req.body
     var io = req.app.io;
 
-    device.updateStatus(updatedDevice,
-        function(updated){
+    device.updateStatus(updatedDevice, function(error, updated){
+        if(error) res.status(500).send(error)
+        else{
             io.emit('ird1280', updated);
-            // console.log("update pushed");
-            // console.log("updatedDevice");
-            // console.log(updated);
-            //res.send(updated);
             res.send("updated");
-        },
-        function(){
-            res.status(500).send("set Status failed.")
         }
-    )
+    })
 });
 
 
 router.get('/:id/services', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id];
-    device.getServiceArray(function(services){
-        device.getService(function(currentService){
-            res.send({services: services, selected: currentService});
-        },
-        function(){
-            res.status(500).send("get service failed.")
-        });
-    },
-    function(){
-        res.status(500).send("get service array failed.")
+    device.getServiceArray(function(error, services){
+        if(error) res.status(500).send(error)
+        else {
+            device.getService(function(error, currentService){
+                if(error) res.status(500).send(error)
+                else res.send({services: services, selected: currentService});
+            });
+        }
     });
 });
 
 router.post('/:id/services', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id];
     var service = req.body.current_service
-    // console.log("setting service to " + service)
     var io = req.app.io;
-    device.setService(service, function(udpated_device){
-        io.emit('ird1280', udpated_device);
-        res.send("updated");
-    },
-    function(err){
-        console.log(err)
-        res.status(500).send("set service failed.")
+    device.setService(service, function(error, udpated_device){
+        if(error) res.status(500).send(error)
+        else{
+            io.emit('ird1280', udpated_device);
+            res.send("updated");
+        }
     });
 });
 
