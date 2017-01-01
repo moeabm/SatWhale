@@ -251,7 +251,7 @@ var ird8200 = function(options) {
             var device = this;
             var iInput = parseInt(input);
             if (isNaN(iInput) && callback) return callback({"error": "Invalid input number: " + input});
-            smbpVars.setOid(session, oid, iInput, snmpVars.INTEGER, function(error, varbinds) {
+            snmpVars.setOid(session, oid, iInput, snmpVars.INTEGER, function(error, varbinds) {
                 if (error) {
                     if(callback) callback(error);
                 } else {
@@ -305,7 +305,7 @@ var ird8200 = function(options) {
             if(isNaN(iPort) && callback) return callback({"error": "Invalid port number: " + port});
             var iFreq = parseInt(freq);
             if(isNaN(iFreq) && callback) return callback({"error": "Invalid frequency: " + freq});
-            smbpVars.setOid(session, oid, freq, snmpVars.INTEGER, function(error, varbinds) {
+            snmpVars.setOid(session, oid, freq, snmpVars.INTEGER, function(error, varbinds) {
                 if (error) {
                     if(callback) callback(error);
                 } else {
@@ -335,7 +335,7 @@ var ird8200 = function(options) {
             if(isNaN(iPort) && callback) return callback({"error": "Invalid port number: " + port});
             var iFreq = parseInt(freq);
             if(isNaN(iFreq) && callback) return callback({"error": "Invalid frequency: " + freq});
-            smbp.Vars.setOid(session,  oid, freq, snmpVars.INTEGER, function(error, varbinds) {
+            snmpVars.setOid(session,  oid, freq, snmpVars.INTEGER, function(error, varbinds) {
                 if (error) {
                     if(callback) callback(error);
                 } else {
@@ -365,7 +365,7 @@ var ird8200 = function(options) {
             if(isNaN(iPort) && callback) return callback({"error": "Invalid port number: " + port});
             var iRate = parseInt(rate);
             if(isNaN(iRate) && callback) return callback({"error": "Invalid symbol rate: " + rate});
-            smbp.Vars.setOid(session, oid, rate, snmpVars.INTEGER, function(error, varbinds) {
+            snmpVars.setOid(session, oid, rate, snmpVars.INTEGER, function(error, varbinds) {
                 if (error) {
                     if(callback) callback(error);
                 } else {
@@ -395,7 +395,7 @@ var ird8200 = function(options) {
             if(isNaN(iPort) && callback) return callback({"error": "Invalid port number: " + port});
             var iMod = parseInt(mod);
             if( (iMod < 0 || iMod > 3 || isNaN(iMod)) && callback) return callback({"error": "Invalid modulation: " + mod});
-            smbp.Vars.setOid(session, oid, mod, snmpVars.INTEGER, function(error, varbinds) {
+            snmpVars.setOid(session, oid, mod, snmpVars.INTEGER, function(error, varbinds) {
                 if (error) {
                     if(callback) callback(error);
                 } else {
@@ -423,7 +423,7 @@ var ird8200 = function(options) {
             var this_device = this;
             var iService = parseInt(service);
             if(isNaN(iService) && callback) return callback({"error": "Invalid service id: " + service});
-            smbp.Vars.setOid(session, oid, service, snmpVars.INTEGER, function(error, varbinds) {
+            snmpVars.setOid(session, oid, service, snmpVars.INTEGER, function(error, varbinds) {
                 if (error) {
                     if(callback) callback(error);
                 } else {
