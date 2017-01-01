@@ -5,7 +5,7 @@ var router = express.Router();
 router.get('/', function(req, res, next) {
   res.send(req.app.get('devices'));
 });
-/* GET a 8200 JSON. */
+/* GET a ird8200s JSON. */
 router.get('/:id', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id]
     // console.log(device);
