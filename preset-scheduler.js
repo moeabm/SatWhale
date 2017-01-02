@@ -31,7 +31,7 @@ var preset_scheduler = function(app) {
                         console.log(job_config.preset);
                         devices[job_config.device].callPreset(job_config.preset, function(error, device_data){
                           if(error){
-                            console.log(error)
+                            console.log(devices[job_config.device].name + " call preset error: " + JSON.stringify(error))
                           }else{
                             app.io.emit(device_data.type, device_data);
                           }
@@ -43,7 +43,7 @@ var preset_scheduler = function(app) {
     };
     restartAllJobs();
 
-    
+
     return {
         addJob: function(job){
             jobs_config.push(job);
@@ -57,7 +57,7 @@ var preset_scheduler = function(app) {
                     return console.log(err);
                 }
                 console.log("Job config file saved! - job added");
-            }); 
+            });
         },
         removeJob: function(job){
             var index = jobs_config.indexOf(job);
@@ -71,7 +71,7 @@ var preset_scheduler = function(app) {
                     return console.log(err);
                 }
                 console.log("Job config file saved! - job removed");
-            }); 
+            });
         }
     }
 };

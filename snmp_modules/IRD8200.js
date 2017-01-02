@@ -55,9 +55,8 @@ var ird8200 = function(options) {
                 var lockStatus = this_device.lock;
                 this_device.getLock(function(error, returned_status){
                     if(error){
-                      console.log("cannot get lock status for device " + this_device.id);
-                      console.log(error)  
-                    } 
+                      console.log(this_device.name + ": cannot get lock status for device -- " + error);
+                    }
                     else if( returned_status != lockStatus){
                         heartbeatFunction();
                     }
@@ -66,9 +65,8 @@ var ird8200 = function(options) {
             this_device.initialized = true;
             this_device.getStatus(function(error, device_data){
                     if(error){
-                      console.log("cannot get lock status for device " + this_device.id);
-                      console.log(error)  
-                    } 
+                        console.log(this_device.name + ": get initalize status -- " + error);
+                    }
                     else console.log(device_data);
                     if(callback) callback(error, device_data);
             });
@@ -84,13 +82,7 @@ var ird8200 = function(options) {
                     if(error && callback) callback(error);
                     else{
                         setTimeout(function(){
-                            this_device.setService(preset.current_service, function(){
-                                console.log("Update status and service success");
-                                callback(null, this_device);
-                            }, function(error){
-                                console.log({error: error, message: "Update status failed on preset call 8200"});
-                                callback(null, this_device);
-                            });
+                            this_device.setService(preset.current_service, callback);
                         }, 2000);
                     }
                 }

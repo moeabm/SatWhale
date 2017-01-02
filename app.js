@@ -47,7 +47,7 @@ Object.keys(config.devices).forEach(function(i) {
     devices[i].initialize(function(){
         io.emit(config.devices[i].type, devices[i]);
     }, function(error, data){
-        if(error) console.log(error)
+        if(error) console.log(config.devices[i].name + ": " + JSON.stringify(error))
         else console.log(data);
     });
 });

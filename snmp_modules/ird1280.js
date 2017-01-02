@@ -55,9 +55,8 @@ var ird1280 = function(options) {
                 var lockStatus = this_device.lock;
                 this_device.getLock(function(error, returned_status){
                     if(error){
-                      console.log("cannot get lock status for device " + this_device.id);
-                      console.log(error)  
-                    } 
+                      console.log(this_device.name + ": cannot get lock status for device -- " + error );
+                    }
                     else if( returned_status != lockStatus){
                         heartbeatFunction();
                     }
