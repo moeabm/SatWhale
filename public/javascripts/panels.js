@@ -1,5 +1,6 @@
 //shared socket functions
-var socket = io('http://10.40.10.67:3000');
+var host = "http://"+window.location.hostname;
+var socket = io(host+':3000');
 socket.on('connect', function(){
     console.log("connected to socket io");
     $('.status').click();
@@ -22,4 +23,3 @@ $('.input').on('change', function (e) {
         $(this).closest(".panel_layout").find(".hideable").hide();
     }
 });
-
