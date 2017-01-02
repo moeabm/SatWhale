@@ -53,18 +53,25 @@ var ird8200 = function(options) {
             var this_device = this;
             heartbeat_loop = setInterval(function(){
                 var lockStatus = this_device.lock;
-                this_device.getLock(function(updated_device){
-                    // console.log(lockStatus + " vs " + devices[i].lock)
-                    if( updated_device.lock != lockStatus){
+                this_device.getLock(function(error, returned_status){
+                    if(error){
+                      console.log("cannot get lock status for device " + this_device.id);
+                      console.log(error)  
+                    } 
+                    else if( returned_status != lockStatus){
                         heartbeatFunction();
                     }
-                }, function(){
-                    console.log("cannot get lock status for device " + this_device.id)
                 });
             }, 1000);
             this_device.initialized = true;
-            this_device.getStatus();
-            if(typeof callback !== "undefined") callback();
+            this_device.getStatus(function(error, device_data){
+                    if(error){
+                      console.log("cannot get lock status for device " + this_device.id);
+                      console.log(error)  
+                    } 
+                    else console.log(device_data);
+                    if(callback) callback(error, device_data);
+            });
         },
 
         callPreset: function(presetName, callback){
@@ -73,22 +80,19 @@ var ird8200 = function(options) {
             var newData = {};
             _.extend(newData, this, preset );
             this.updateStatus(newData,
-                function(data){
-                    // console.log(data);
-                    console.log("Update status success");
-                    setTimeout(function(){
-                        this_device.setService(preset.current_service, function(){
-                            console.log("Update status and service success");
-                            callback(null, this_device);
-                        }, function(error){
-                            console.log({error: error, message: "Update status failed on preset call 8200"});
-                            callback(null, this_device);
-                        });
-                    }, 2000);
-                },
-                function(error){
-                    console.log(error);
-                    console.log("Update status failed on preset call");
+                function(error, data){
+                    if(error && callback) callback(error);
+                    else{
+                        setTimeout(function(){
+                            this_device.setService(preset.current_service, function(){
+                                console.log("Update status and service success");
+                                callback(null, this_device);
+                            }, function(error){
+                                console.log({error: error, message: "Update status failed on preset call 8200"});
+                                callback(null, this_device);
+                            });
+                        }, 2000);
+                    }
                 }
             )
         },
@@ -196,7 +200,7 @@ var ird8200 = function(options) {
                 else{
                     if (newData.freq && newData.freq != this_device.freq) {
                         console.log("==========Port Changed and freq========");
-                        this_device.setLOFreq(shared.freqToLo(newData.freq), newData.port, function() {
+                        this_device.setLOFreq(shared.freqToLO(newData.freq), newData.port, function() {
                             this_device.setSatFreq(newData.freq, newData.port, tick_finished)
                         })
                     } else {
@@ -222,7 +226,7 @@ var ird8200 = function(options) {
             });
 
             function doCallback() {
-                if(callback) callback(this_device);
+                if(callback) callback(null, this_device);
             }
         },
 
@@ -246,16 +250,16 @@ var ird8200 = function(options) {
             });
         },
         // interger: 1-4 input port source
-        setInput: function(input, cb, fcb) {
+        setInput: function(input, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.1.2.0";
-            var device = this;
+            var this_device = this;
             var iInput = parseInt(input);
             if (isNaN(iInput) && callback) return callback({"error": "Invalid input number: " + input});
             snmpVars.setOid(session, oid, iInput, snmpVars.INTEGER, function(error, varbinds) {
                 if (error) {
                     if(callback) callback(error);
                 } else {
-                    this_device.getInput(port, callback);
+                    if(callback) this_device.getInput(callback);
                 }
             });
         },
@@ -271,17 +275,17 @@ var ird8200 = function(options) {
                 }
             });
         },
-        // interger: 1-4 input port source
+        // interger: 0-3 rf port
         setPort: function(port, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.2.2.1.0";
-            var device = this;
+            var this_device = this;
             var iPort = parseInt(port) - 1;
             if ( (iPort < 0 || iPort > 3 || isNaN(iPort)) && callback) return callback({"error": "Invalid port number: " + port});
             snmpVars.setOid(session, oid, iPort, snmpVars.INTEGER, function(error, varbinds) {
                 if (error) {
                     if(callback) callback(error);
                 } else {
-                    this_device.getPort(port, callback);
+                    this_device.getPort(callback);
                 }
             });
         },
@@ -292,7 +296,8 @@ var ird8200 = function(options) {
                 if (error) {
                     if(callback) callback(error);
                 } else {
-                    this_device.port = varbinds[0].value;
+                    console.log("port for " + this_device.name + " : " + varbinds[0].value)
+                    this_device.port = varbinds[0].value + 1;
                     if(callback) callback(null, this_device.port);
                 }
             });
@@ -427,11 +432,11 @@ var ird8200 = function(options) {
                 if (error) {
                     if(callback) callback(error);
                 } else {
-                    this_device.getService(port,
+                    this_device.getService(
                         function(retuned_service) {
                             if (retuned_service != varbinds[0].value ){
                                 if(set_service_tries++ < set_service_tries_limit)
-                                    device.setService(service, callback);
+                                    this_device.setService(service, callback);
                                 else if(callback) callback({"error": "Max set service tries exceeded."});
                             }
                             else {

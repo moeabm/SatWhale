@@ -6,6 +6,12 @@ var snmpVars = require('./snmp-vars');
 var shared = require('../shared-functions');
 var presets = require('../presets.json');
 
+shared.freqToLO = function(freq) {
+    if (freq < 12700000 && freq > 11700000) return 10750000; //Hz Ku range
+    if (freq < 4200000 && freq > 3625000) return 5150000; //Hz C range
+    console.log("Invalid frequency: " + freq + "Hz");
+    return -1;
+}
 
 
 var ird1280 = function(options) {
@@ -47,12 +53,14 @@ var ird1280 = function(options) {
             var this_device = this;
             heartbeat_loop = setInterval(function(){
                 var lockStatus = this_device.lock;
-                this_device.getLock(function(updated_device){
-                    if( updated_device.lock != lockStatus){
+                this_device.getLock(function(error, returned_status){
+                    if(error){
+                      console.log("cannot get lock status for device " + this_device.id);
+                      console.log(error)  
+                    } 
+                    else if( returned_status != lockStatus){
                         heartbeatFunction();
                     }
-                }, function(){
-                    console.log("cannot get lock status for device " + this_device.id)
                 });
             }, 1000);
             this_device.initialized = true;
@@ -66,8 +74,9 @@ var ird1280 = function(options) {
             var newData = {};
             _.extend(newData, this, preset );
             this.updateStatus(newData,
-                function(data){
-                    setTimeout(function(){
+                function(error, data){
+                    if(error && callback) callback(error);
+                    else setTimeout(function(){
                         this_device.setService(preset.current_service, function(){
                             callback(null, this_device);
                         }, function(error){
@@ -76,10 +85,6 @@ var ird1280 = function(options) {
                             callback(null, this_device);
                         });
                     }, 2000);
-                },
-                function(error){
-                    console.log(error);
-                    console.log("Update status failed on preset call 1280");
                 }
             )
         },
@@ -169,7 +174,7 @@ var ird1280 = function(options) {
                 else{
                     if (newData.freq && newData.freq != this_device.freq) {
                         console.log("==========Port Changed and freq========");
-                        this_device.setLOFreq(shared.freqToLo(newData.freq), newData.port, function() {
+                        this_device.setLOFreq(shared.freqToLO(newData.freq), newData.port, function() {
                             this_device.setSatFreq(newData.freq, newData.port, tick_finished)
                         })
                     } else {
@@ -194,7 +199,7 @@ var ird1280 = function(options) {
                 }
             });
             function doCallback() {
-                if(callback) callback(this_device);
+                if(callback) callback(null, this_device);
             }
         },
         isLocked: function() {
@@ -219,14 +224,14 @@ var ird1280 = function(options) {
         // interger: 2-5 input port source
         setPort: function(port, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.200.4.3.3.2.1.0";
-            var device = this;
+            var this_device = this;
             var iPort = parseInt(port) - 1;
             if ( (iPort < 2 || iPort > 5 || isNaN(iPort)) && callback) return callback({"error": "Invalid port number: " + port});
             snmpVars.setOid(session, oid, iPort, snmpVars.INTEGER, function(error, varbinds) {
                 if (error) {
                     if(callback) callback(error);
                 } else {
-                    this_device.getPort(port, callback);
+                    this_device.getPort(callback);
                 }
             });
         },
@@ -333,7 +338,7 @@ var ird1280 = function(options) {
             });
         },
         // snmpVars.INTEGER: 0 Modulation 0=DVB-S 2=DVB-S2 or 8PSK 1=DVB-S2??
-        setModulation: function(mod, port, cb, fcb) {
+        setModulation: function(mod, port, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.200.4.3.3.2.2.1.9." + port;
             var this_device = this;
             var iPort = parseInt(port);

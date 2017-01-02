@@ -36,7 +36,7 @@ $('.qt_simple .output').on('blur', function (e) {
     // console.log(getPanel(id));
     var qt_device = getPanel(id).devices[0];
     $.get("/qtlbands/"+qt_device.id+"/output/"+ valueSelected, null, function(json) {
-        panel.find(".qt_input").val(json.input);
+        panel.find(".qt_input").val(parseInt(json.input));
         // console.log(json)
     }, "json");
 });

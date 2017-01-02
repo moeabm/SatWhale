@@ -39,20 +39,21 @@ var qt_lband = function(options) {
     };
 
     var setCommand =function(commandStr, callback){
-        session.set({
-            oid: setCommandOid,
-            value: commandStr,
-            type: snmpVars.OCTETSTRING
-        }, function(error, varbinds) {
-            if (error) {
-                if(callback) callback(error);
-            } else {
-                if(callback) callback(null, varbinds);
-            }
-        });
+        snmpVars.setOid(session, setCommandOid, commandStr, snmpVars.OCTETSTRING, callback);
+        // session.set({
+        //     oid: setCommandOid,
+        //     value: commandStr,
+        //     type: snmpVars.OCTETSTRING
+        // }, function(error, varbinds) {
+        //     if (error) {
+        //         if(callback) callback(error);
+        //     } else {
+        //         if(callback) callback(null, varbinds);
+        //     }
+        // });
     };
     var getCommand = function(callback){
-        getOid(session, getCommandOid, callback);
+        snmpVars.getOid(session, getCommandOid, callback);
     };
 
     var releaseLock = function(){
@@ -73,10 +74,8 @@ var qt_lband = function(options) {
         initialize: function(heartbeatFunction, callback){
             //this device does not have/need a heartbeatFunction. Not Used
             var this_device = this;
-            this_device.getStatus(function(){
-                this_device.initialized = true;
-                if(typeof callback !== "undefined") callback();
-            });
+            this_device.initialized = true;
+            this_device.getStatus(callback);
         },
 
 
@@ -148,7 +147,8 @@ var qt_lband = function(options) {
                     sync.await(setCommand(commandStr, sync.defer() ) );
                     var varbinds = sync.await(getCommand(sync.defer() ) );
                     releaseLock();
-                    if(callback) callback(null, varbinds[0].value.replace(/\D/, ""));
+                    // console.log("Output " + ouput + " is assigned to " + varbinds[0].value.replace(/\D/, ""));
+                    if(callback) callback(null, parseInt(varbinds[0].value.replace(/\D/, "")) );
                 }
                 catch (e){
                     releaseLock();
@@ -193,25 +193,26 @@ var qt_lband = function(options) {
         },
         loadIO: function(callback) {
             var this_device = this;
+            var callback_called = false;
             //get output size
-            function getOutSize(callback){
+            function getOutSize(cb){
                 var oid = ".1.3.6.1.4.1.901.20398.1.2.5.0";
                 snmpVars.getOid(session, oid, function(error, varbinds){
                     if (error) {
-                        if(callback) callback(error);
+                        if(cb) cb(error);
                     } else {
-                        if(callback) callback(null, varbinds[0].value);
+                        if(cb) cb(null, varbinds[0].value);
                     }
                 });
             };
             //get input size
-            function getInSize(callback){
+            function getInSize(cb){
                 var oid = ".1.3.6.1.4.1.901.20398.1.2.6.0";
                 snmpVars.getOid(session, oid, function(error, varbinds){
                     if (error) {
-                        if(callback) callback(error);
+                        if(cb) cb(error);
                     } else {
-                        if(callback) callback(null, varbinds[0].value);
+                        if(cb) cb(null, varbinds[0].value);
                     }
                 });
             };
@@ -226,11 +227,16 @@ var qt_lband = function(options) {
                     for(i = 1; i <= inputs; i++ ){
                         this_device.inputs[i-1] = sync.await(this_device.getInputName(i, sync.defer() ) );
                     }
-                    callback(this_device);
+                    callback_called = true;
+                    callback(null, this_device);
                 }
                 catch (e){
                     releaseLock(); // just in case we throw error in lock state
-                    if(callback) callback(e);
+                    console.log(e);
+                    if(!callback_called && callback){
+                        callback_called = true;
+                        callback(e);
+                    }
                 }
             });
 

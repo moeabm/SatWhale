@@ -33,10 +33,24 @@ $('.full_8200_with_qt .status').on('click', function (e) {
 
 
 // This allows the blur trigger to send the data update because by default changing a select will not blur
-$('.full_8200_with_qt .qt_input,.full_8200_with_qt  .port,.full_8200_with_qt  .service').on('change', function (e) {
+$('.full_8200_with_qt .input, .full_8200_with_qt .qt_input,.full_8200_with_qt  .port,.full_8200_with_qt  .service').on('change', function (e) {
     if($(this).is(":focus")){
         $(this).blur();
     }
+});
+
+// We use blur instead of change because change could be called programatically.
+// We only want to trigger an update from users on this page and not from updates from the server.
+$('.full_8200_with_qt .input').on('blur', function (e) {
+    var panel = $(this).closest(".panel_layout");
+    var valueSelected = this.value;
+    var selectedText = $("option:selected", this).text().toLowerCase();
+    var id = getPanelID(panel);
+    if(id < 0) return; // exit if panel id not found
+    if(valueSelected == panels[id].devices[0].input) return; //dont update if field didnt change
+    panels[id].devices[0].input = valueSelected;
+
+    $.post("/ird8200s/"+panels[id].devices[0].id, panels[id].devices[0], function(json) {}, "json");
 });
 
 // We use blur instead of change because change could be called programatically.

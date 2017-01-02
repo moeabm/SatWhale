@@ -19,11 +19,11 @@ router.get('/:id', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id]
     // console.log(device);
     device.getStatus(
-        function(err, returned_device){
-            res.send(device);
-        },
-        function(){
-            res.status(500).send("get Status failed.")
+        function(error, returned_device){
+            if(error){
+                res.status(500).send(error)
+            }
+            else res.send(device);
         }
     )
 });
@@ -41,11 +41,11 @@ router.post('/:id', function(req, res, next) {
 router.get('/:id/output/:num', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id];
     var output = req.params.num;
-    device.getOutputStatus(output, function(err, input){
-        res.send({"output": output, "input": input });
-    },
-    function(){
-        res.status(500).send("get output failed.")
+    device.getOutputStatus(output, function(error, input){
+        if(error){
+            res.status(500).send(error)
+        }
+        else res.send({"output": output, "input": input });
     });
 });
 
@@ -55,14 +55,16 @@ router.post('/:id/output/:num', function(req, res, next) {
     var output = req.params.num;
     var input = req.body.input;
     var io = req.app.io;
-    device.setCrosspoint(output, input, function(err, varbinds){
-        res.send("crosspoint set");
-        device.output = output;
-        device.input = input;
-        io.emit('qt_lband', device);
-    },
-    function(){
-        res.status(500).send("get service array failed.")
+    device.setCrosspoint(output, input, function(error, varbinds){
+        if(error){
+            res.status(500).send(error)
+        }
+        else{
+            res.send("crosspoint set");
+            device.output = output;
+            device.input = input;
+            io.emit('qt_lband', device);
+        }
     });
 });
 

@@ -46,6 +46,9 @@ Object.keys(config.devices).forEach(function(i) {
     devices[i] = device_drivers[config.devices[i].type](config.devices[i]); //require("./snmp_modules/" + config.devices[i].type)(config.devices[i]);
     devices[i].initialize(function(){
         io.emit(config.devices[i].type, devices[i]);
+    }, function(error, data){
+        if(error) console.log(error)
+        else console.log(data);
     });
 });
 
