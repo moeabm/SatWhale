@@ -1,6 +1,6 @@
 body {
   padding: 0px;
-  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  /*font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;*/
   font-size: 14px;
   line-height: 1.42857143;
   color: #333;
@@ -14,7 +14,7 @@ a {
     min-height: 400px;
     height: 400px;
     max-height: 400px;
-    overflow: hidden; 
+    overflow: hidden;
 
     /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+0,ffffff+50,ffffff+51,000000+100&0.7+0,0.6+40,0.4+55,0.6+88,0.7+100 */
     background: -moz-linear-gradient(-45deg,  rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.6) 40%, rgba(255,255,255,0.47) 50%, rgba(255,255,255,0.46) 51%, rgba(234,234,234,0.4) 55%, rgba(62,62,62,0.6) 88%, rgba(0,0,0,0.7) 100%); /* FF3.6-15 */
@@ -77,3 +77,37 @@ label, span{
 .status-nocomm{
     background-color: gray;
 }
+
+.menu-toggle {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+    height: 32px;
+    width: 32px;
+    background: linear-gradient(to right top, rgba(255,255,255,0.0) 50%, #212531 50%);
+    z-index: 99;
+}
+.menu-toggle:hover {
+    background: linear-gradient(to right top, rgba(255,255,255,0.0) 50%, #fff 50%);
+    /*background-color: white;*/
+
+}
+
+/*
+.menu-toggle {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background-color: gray;
+    border-radius: 4px;
+    height: 40px;
+    width: 40px;
+    text-align: center;
+    font-size: 24px;
+    display: block;
+    z-index: 99;
+}
+
+.menu-toggle span {
+    margin-top: .3em;
+}*/

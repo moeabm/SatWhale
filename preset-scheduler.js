@@ -29,7 +29,7 @@ var preset_scheduler = function(app) {
                     function(job_config){
                         console.log("shots fired " + job_config.device);
                         console.log(job_config.preset);
-                        devices[job_config.device].callPreset(job_config.preset, function(error, device_data){
+                        if(devices[job_config.device]) devices[job_config.device].callPreset(job_config.preset, function(error, device_data){
                           if(error){
                             console.log(devices[job_config.device].name + " call preset error: " + JSON.stringify(error))
                           }else{

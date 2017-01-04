@@ -1,8 +1,7 @@
 mixin full_1280(panel)
+    div.menu-toggle
+        //- span.glyphicon.glyphicon-menu-hamburger
     div.full_1280.panel_layout(id="panel_#{panel.id}")
-        div.menu
-            div.linktocontrol
-                a(href="http://#{panel.devices[0].address}") #{panel.devices[0].name}
         div.form-group
             button.btn.col-xs-12.status #{panel.name}
             span.sat.nopad.col-xs-6.col-xs-offset-4
@@ -26,22 +25,22 @@ mixin full_1280(panel)
                 label.col-xs-4.text-right.text-nowrap Modulation
                 div.col-xs-4
                     .form-check
-                      label.form-check-label
-                        input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=1, checked)
-                        |     BPSK
+                        label.form-check-label
+                            input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=1, checked)
+                            |     BPSK
                     .form-check
-                      label.form-check-label
-                        input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=2)
-                        |     QPSK
+                        label.form-check-label
+                            input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=2)
+                            |     QPSK
                 div.col-xs-4
                     .form-check
-                      label.form-check-label
-                        input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=3)
-                        |     8PSK
+                        label.form-check-label
+                            input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=3)
+                            |     8PSK
                     .form-check
-                      label.form-check-label
-                        input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=3)
-                        |     16QAM
+                        label.form-check-label
+                            input.form-check-input.modulation(type='radio', name='modulation_#{panel.id}', value=3)
+                            |     16QAM
             div.row
                 label.col-xs-4.text-right.text-nowrap Service
                 span.nopad.col-xs-8
