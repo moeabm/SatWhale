@@ -63,8 +63,7 @@ var ird1280 = function(options) {
                 });
             }, 1000);
             this_device.initialized = true;
-            this_device.getStatus();
-            if(typeof callback !== "undefined") callback();
+            this_device.getStatus(callback);
         },
 
         callPreset: function(presetName, callback){

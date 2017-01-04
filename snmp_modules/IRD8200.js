@@ -415,7 +415,7 @@ var ird8200 = function(options) {
             });
         },
         // snmpVars.INTEGER: service array
-        setService: function(service, callback, fcb) {
+        setService: function(service, callback) {
             var oid = ".1.3.6.1.4.1.1773.1.3.208.4.1.2.0";
             var this_device = this;
             var iService = parseInt(service);
@@ -425,15 +425,22 @@ var ird8200 = function(options) {
                     if(callback) callback(error);
                 } else {
                     this_device.getService(
-                        function(retuned_service) {
-                            if (retuned_service != varbinds[0].value ){
-                                if(set_service_tries++ < set_service_tries_limit)
-                                    this_device.setService(service, callback);
-                                else if(callback) callback({"error": "Max set service tries exceeded."});
-                            }
-                            else {
-                                set_service_tries = 0;
-                                if(callback) callback(retuned_service);
+                        function(error, retuned_service) {
+                            if (error) {
+                                if(callback) callback(error);
+                            } else {
+                                if (retuned_service != varbinds[0].value ){
+                                    if(set_service_tries++ < set_service_tries_limit)
+                                        this_device.setService(service, callback);
+                                    else {
+                                        if(callback) callback({"error": "Max set service tries exceeded."});
+                                        set_service_tries = 0;
+                                    }
+                                }
+                                else {
+                                    set_service_tries = 0;
+                                    if(callback) callback(null, retuned_service);
+                                }
                             }
                         }
                     )
