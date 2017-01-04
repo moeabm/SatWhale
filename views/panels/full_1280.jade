@@ -1,5 +1,8 @@
 mixin full_1280(panel)
     div.full_1280.panel_layout(id="panel_#{panel.id}")
+        div.menu
+            div.linktocontrol
+                a(href="http://#{panel.devices[0].address}") #{panel.devices[0].name}
         div.form-group
             button.btn.col-xs-12.status #{panel.name}
             span.sat.nopad.col-xs-6.col-xs-offset-4
