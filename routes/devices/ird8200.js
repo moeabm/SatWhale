@@ -47,10 +47,10 @@ router.post('/:id/services', function(req, res, next) {
     var device = req.app.get('devices')[req.params.id];
     var service = req.body.current_service
     var io = req.app.io;
-    device.setService(service, function(error, udpated_device){
+    device.setService(service, function(error, updated_service){
         if(error) res.status(500).send(error)
         else{
-            io.emit('ird8200', udpated_device);
+            io.emit('ird8200', device);
             res.send("updated");
         }
     });
