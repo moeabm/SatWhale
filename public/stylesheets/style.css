@@ -29,7 +29,7 @@ a {
     padding-top: 20px;
     padding-bottom: 20px;
     overflow: hidden;
-    max-width: 25vw;
+    /*max-width: 25vw;*/
 }
 .full_8200_with_qt, .full_8200, .empty_panel{
     min-height: 400px;
@@ -124,11 +124,18 @@ label, span{
     overflow: auto;
     z-index: 99;
 }
+
 .cPanel.cPanel-full .panel_layout{
+    background-color: #444;
+    color: #ddd;
+    margin: auto;
+    padding: 20px;
+    max-height: inherit;
     display: inline;
     float: left;
     height: 100%;
-    width: 25%;
+    width: 100%;
+    border-radius: 15px;
 }
 
 
@@ -136,10 +143,25 @@ label, span{
 .cPanel.cPanel-full .tables{
     display: inline;
     float: left;
-    height: 100%;
-    width: 75%;
+    /*height: 100%;*/
+    width: 100%;
 }
 
+.cPanel.cPanel-full .tables tr>th{
+    background-color: #444;
+    color: #ddd;
+}
+
+
+@media (min-width: 768px){
+    .cPanel.cPanel-full .panel_layout{
+        width: 25%;
+    }
+
+    .cPanel.cPanel-full .tables{
+        width: 75%;
+    }
+}
 /*
 .menu-toggle {
     position: absolute;

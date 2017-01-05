@@ -2,7 +2,7 @@ mixin preset_table(devices)
   div.container.well
     h3 presets
     each device in devices
-      table.table.table-striped.table-condensed.table-hover
+      table.table.table-striped.table-condensed.table-hover.table-bordered
         tr
           th Preset name (#{device.name})
           if device.presetable_attributes
