@@ -23,3 +23,24 @@ $('.input').on('change', function (e) {
         $(this).closest(".panel_layout").find(".hideable").hide();
     }
 });
+
+
+$(".curtain").on('click', function(e){
+    var curtain = $(".curtain").hide();
+    $(".cPanel-full").removeClass("cPanel-full");
+});
+$('.menu-toggle').on('click', function (e) {
+    console.log("toggle clicked");
+    var cPanel = $(this).closest(".cPanel");
+    var curtain = $(".curtain").show();
+    cPanel.addClass("cPanel-full");
+    cPanel.find(".get-next").click();
+});
+
+$('button.get-next').on('click', function (e) {
+    var cell = $(this).closest("td");
+    var row = $(this).closest("tr");
+    var time = row.find("td.time").text();
+    var nextRun = later.schedule( later.parse.cron(time, true) ).next(1)
+    cell.find(".value").html(printDate(nextRun));
+});

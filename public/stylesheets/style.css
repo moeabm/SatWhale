@@ -29,6 +29,7 @@ a {
     padding-top: 20px;
     padding-bottom: 20px;
     overflow: hidden;
+    max-width: 25vw;
 }
 .full_8200_with_qt, .full_8200, .empty_panel{
     min-height: 400px;
@@ -84,13 +85,59 @@ label, span{
     top: 0px;
     height: 32px;
     width: 32px;
-    background: linear-gradient(to right top, rgba(255,255,255,0.0) 50%, #212531 50%);
-    z-index: 99;
+    background: linear-gradient(to right top, rgba(255,255,255,0.0) 50%, #212531 51%,rgba(0,0,0,0.4) 70%);
+    z-index: 60;
 }
 .menu-toggle:hover {
-    background: linear-gradient(to right top, rgba(255,255,255,0.0) 50%, #fff 50%);
+    /*background: linear-gradient(to right top, rgba(255,255,255,0.0) 50%, rgba(255,255,255, 1.0) 50%,rgba(255,255,255, 0.4) 70%);*/
     /*background-color: white;*/
 
+    height: 48px;
+    width: 48px;
+}
+
+.curtain{
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    min-height: 100vh;
+    background-color: rgba(0,0,0, 0.8);
+    z-index: 90;
+}
+.cPanel .tables{
+    display: none;
+    overflow: auto;
+    padding: 20px;
+}
+
+.cPanel.cPanel-full{
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: calc(100vw - 60px);
+    height: calc(100vh - 60px);
+    max-height: calc(100vh);
+    margin: 30px !important;
+    border-radius: 15px;
+    overflow: auto;
+    z-index: 99;
+}
+.cPanel.cPanel-full .panel_layout{
+    display: inline;
+    float: left;
+    height: 100%;
+    width: 25%;
+}
+
+
+
+.cPanel.cPanel-full .tables{
+    display: inline;
+    float: left;
+    height: 100%;
+    width: 75%;
 }
 
 /*

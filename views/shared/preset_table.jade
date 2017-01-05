@@ -1,0 +1,17 @@
+mixin preset_table(devices)
+  div.container.well
+    h3 presets
+    each device in devices
+      table.table.table-striped.table-condensed.table-hover
+        tr
+          th Preset name (#{device.name})
+          if device.presetable_attributes
+            each field in device.presetable_attributes
+              th #{field}
+        if presets[device.id]
+          each preset in presets[device.id]
+            tr
+              td #{preset.presetName}
+              if device.presetable_attributes
+                each field in device.presetable_attributes
+                  td #{preset[field]}

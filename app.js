@@ -39,6 +39,8 @@ var device_drivers = {
 var config = require('./config.json').config;
 var devices = {};
 var panels = config.panels;
+var presets = require('./presets.json');
+var schedule = require('./schedule.json'); 
 
 
 //initialize devices
@@ -68,6 +70,8 @@ transferDevicesToPanels(panels);
 // globals
 app.set('devices', devices);
 app.set('panels', panels);
+app.set('presets', presets);
+app.set('schedule', schedule);
 
 var preset_scheduler = require('./preset-scheduler')(app);
 

@@ -3,6 +3,7 @@ extends layout
 
 block content
   - var numPanels = 0;
+  div.curtain
   each panel, index in panels
     - numPanels++
     div.panel.cPanel.col-sm-3(style="background-color: #{panel.color}")

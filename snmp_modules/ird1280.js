@@ -48,6 +48,7 @@ var ird1280 = function(options) {
         modulation: null,
         current_service: null,
         initialized: false,
+        presetable_attributes: ["port", "freq", "loFreq", "symRate", "modulation", "current_service"],
 
         initialize: function(heartbeatFunction, callback){
             var this_device = this;

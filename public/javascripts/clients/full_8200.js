@@ -1,4 +1,4 @@
-
+console.log(later)
 $('.full_8200 .status').on('click', function (e) {
     var this_button = $(this);
     var id = getPanelID($(this).closest(".panel_layout"));

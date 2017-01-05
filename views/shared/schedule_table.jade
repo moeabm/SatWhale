@@ -1,0 +1,23 @@
+mixin schedule_table(devices)
+  div.container.well
+    h3 Schedule
+    table.table.table-striped.table-condensed.table-hover
+      tr 
+        th Job Name
+        th Device
+        th Time String
+        th Next Run
+      each device in devices
+        each job in schedule
+          if device.id == job.device
+            tr 
+              td #{job.preset}
+              td #{device.name}
+              td.time #{job.time}
+              td 
+                button.get-next
+                span.value
+  script.
+    //- var results = 
+    var nextrun = later.schedule( later.parse.cron("30 17 * * * *", true) ).next(1)
+    console.log(nextrun);

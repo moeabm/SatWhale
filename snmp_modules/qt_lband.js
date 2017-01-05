@@ -70,6 +70,7 @@ var qt_lband = function(options) {
         address: options.address,
         inputs: [],
         outputs: [],
+        presetable_attributes: ["input", "output"],
 
         initialize: function(heartbeatFunction, callback){
             //this device does not have/need a heartbeatFunction. Not Used
