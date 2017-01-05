@@ -85,15 +85,27 @@ label, span{
     top: 0px;
     height: 32px;
     width: 32px;
-    background: linear-gradient(to right top, rgba(255,255,255,0.0) 50%, #212531 51%,rgba(0,0,0,0.4) 70%);
+    background: linear-gradient(45deg, rgba(255,255,255,0.0) 50%, #212531 51%,rgba(0,0,0,0.4) 70%);
     z-index: 60;
 }
 .menu-toggle:hover {
     /*background: linear-gradient(to right top, rgba(255,255,255,0.0) 50%, rgba(255,255,255, 1.0) 50%,rgba(255,255,255, 0.4) 70%);*/
     /*background-color: white;*/
+    transition: all 500ms;
+    height: 200px;
+    width: 200px;
+}
+.menu-toggle:hover:before {
+    display: block;
+    overflow: hidden;
+    content: "Full Screen";
+    white-space: nowrap;
+    font-size: 24pt;
+    color: white;
 
-    height: 48px;
-    width: 48px;
+    padding-left: 40px;
+    margin-top: 40px;
+    transform: rotate(45deg);
 }
 
 .curtain{
@@ -110,6 +122,7 @@ label, span{
     display: none;
     overflow: auto;
     padding: 20px;
+    min-height: 100%;
 }
 
 .cPanel.cPanel-full{
@@ -128,7 +141,7 @@ label, span{
 .cPanel.cPanel-full .menu-toggle{
     display: none;
 }
-.cPanel.cPanel-full .panel_layout{.menu-toggle
+.cPanel.cPanel-full .panel_layout{
     background-color: #444;
     color: #ddd;
     margin: auto;

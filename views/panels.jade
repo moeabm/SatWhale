@@ -11,24 +11,16 @@ mixin panelLayout(panel)
     case panel.type
         when "full_1280"
             +full_1280(panel)
-            div.close-box
-            div.tables
-                div.preset-table
-                    +preset_table(panel.devices)
-                div.schedule-table
-                    +schedule_table(panel.devices)
+            +addFullDetailElements(panel)
         when "full_8200"
             +full_8200(panel)
+            +addFullDetailElements(panel)
         when "qt_simple"
             +qt_simple(panel)
+            +addFullDetailElements(panel)
         when "full_8200_with_qt"
             +full_8200_with_qt(panel)
-            div.close-box
-            div.tables
-                div.preset-table
-                    +preset_table(panel.devices)
-                div.schedule-table
-                    +schedule_table(panel.devices)
+            +addFullDetailElements(panel)
         when "sym_calc"
             +sym_calc(panel)
         when "freq_to_lband"
@@ -39,3 +31,10 @@ mixin panelLayout(panel)
         default
             p #{JSON.stringify(panel)}
 
+mixin addFullDetailElements(panel)
+    div.close-box
+    div.tables
+        div.preset-table
+            +preset_table(panel.devices)
+        div.schedule-table
+            +schedule_table(panel.devices)
