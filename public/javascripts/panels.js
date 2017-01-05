@@ -25,7 +25,7 @@ $('.input').on('change', function (e) {
 });
 
 
-$(".curtain").on('click', function(e){
+$(".curtain, .close-box").on('click', function(e){
     var curtain = $(".curtain").hide();
     $(".cPanel-full").removeClass("cPanel-full");
 });
@@ -36,6 +36,7 @@ $('.menu-toggle').on('click', function (e) {
     cPanel.addClass("cPanel-full");
     cPanel.find(".get-next").click();
 });
+
 
 $('button.get-next').on('click', function (e) {
     var cell = $(this).closest("td");

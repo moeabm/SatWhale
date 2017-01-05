@@ -11,6 +11,7 @@ mixin panelLayout(panel)
     case panel.type
         when "full_1280"
             +full_1280(panel)
+            div.close-box
             div.tables
                 div.preset-table
                     +preset_table(panel.devices)
@@ -22,6 +23,7 @@ mixin panelLayout(panel)
             +qt_simple(panel)
         when "full_8200_with_qt"
             +full_8200_with_qt(panel)
+            div.close-box
             div.tables
                 div.preset-table
                     +preset_table(panel.devices)
@@ -36,4 +38,4 @@ mixin panelLayout(panel)
                 +panelLayout(subpanel)
         default
             p #{JSON.stringify(panel)}
-    
+

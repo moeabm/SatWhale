@@ -125,7 +125,10 @@ label, span{
     z-index: 99;
 }
 
-.cPanel.cPanel-full .panel_layout{
+.cPanel.cPanel-full .menu-toggle{
+    display: none;
+}
+.cPanel.cPanel-full .panel_layout{.menu-toggle
     background-color: #444;
     color: #ddd;
     margin: auto;
@@ -138,7 +141,24 @@ label, span{
     border-radius: 15px;
 }
 
-
+.cPanel.cPanel-full .close-box{
+    font-family: 'Glyphicons Halflings';
+    position: fixed;
+    font-size: 34px;
+    border-radius: 20px;
+    right: 8px;
+    top: 23px;
+    line-height: 35px;
+    width: 34px;
+    z-index: 99;
+    background-color: white;
+    background: radial-gradient(ellipse at center, rgba(255,255,255,1) 0%,rgba(255,255,255,1) 47%,rgba(255,255,255,0) 48%,rgba(255,255,255,0) 100%); 
+    color: red;
+    padding-top: 1px;
+}
+.cPanel.cPanel-full .close-box:before{
+    content: "\e083";
+}
 
 .cPanel.cPanel-full .tables{
     display: inline;
@@ -161,6 +181,12 @@ label, span{
     .cPanel.cPanel-full .tables{
         width: 75%;
     }
+}
+
+@font-face {
+  font-family: 'Glyphicons Halflings';
+  src: url('../fonts/glyphicons-halflings-regular.eot');
+  src: url('../fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'), url('../fonts/glyphicons-halflings-regular.woff') format('woff'), url('../fonts/glyphicons-halflings-regular.ttf') format('truetype'), url('../fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');
 }
 /*
 .menu-toggle {
