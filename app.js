@@ -79,6 +79,7 @@ var preset_scheduler = require('./preset-scheduler')(app);
 app.use('/ird1280s', require('./routes/devices/ird1280'));
 app.use('/ird8200s', require('./routes/devices/ird8200'));
 app.use('/qtlbands', require('./routes/devices/qt_lband'));
+app.use('/presets', require('./routes/presets'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
