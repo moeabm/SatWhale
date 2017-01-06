@@ -29,7 +29,8 @@ $(".curtain, .close-box").on('click', function(e){
     var curtain = $(".curtain").hide();
     $(".cPanel-full").removeClass("cPanel-full");
 });
-$('.menu-toggle').on('click', function (e) {
+$('.menu-toggle div.text a').on('click', function (e) {
+    e.preventDefault();
     console.log("toggle clicked");
     var cPanel = $(this).closest(".cPanel");
     var curtain = $(".curtain").show();

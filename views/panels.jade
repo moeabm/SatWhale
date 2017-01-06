@@ -32,6 +32,11 @@ mixin panelLayout(panel)
             p #{JSON.stringify(panel)}
 
 mixin addFullDetailElements(panel)
+    div.menu-toggle 
+        div.text 
+            a(href=".") Presets
+        div.link 
+            a(href="http://#{panel.devices[0].address}" target="_blank") Controller
     div.close-box
     div.tables
         div.preset-table

@@ -81,31 +81,44 @@ label, span{
 
 .menu-toggle {
     position: absolute;
-    right: 0px;
-    top: 0px;
-    height: 32px;
-    width: 32px;
-    background: linear-gradient(45deg, rgba(255,255,255,0.0) 50%, #212531 51%,rgba(0,0,0,0.4) 70%);
+    right: -20px;
+    top: -20px;
+    height: 40px;
+    width: 40px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, #212531 1%,rgba(0,0,0,0.4) 70%);
+    transform: rotate(45deg);
+    vertical-align: bottom;
     z-index: 60;
-}
-.menu-toggle:hover {
-    /*background: linear-gradient(to right top, rgba(255,255,255,0.0) 50%, rgba(255,255,255, 1.0) 50%,rgba(255,255,255, 0.4) 70%);*/
-    /*background-color: white;*/
-    transition: all 500ms;
-    height: 200px;
-    width: 200px;
-}
-.menu-toggle:hover:before {
-    display: block;
     overflow: hidden;
-    content: "Full Screen";
     white-space: nowrap;
     font-size: 24pt;
     color: white;
+}
+.menu-toggle a, .menu-toggle a:hover, .menu-toggle a:visited, .menu-toggle a:active, .menu-toggle a:link{
+    text-decoration: none;
+    color: white;
+}
+.menu-toggle div{
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    left: 0px;
+}
+.menu-toggle .text{
+    bottom: 10px;
+}
+.menu-toggle .link{
+    bottom: 50px;
+}
 
-    padding-left: 40px;
-    margin-top: 40px;
-    transform: rotate(45deg);
+.menu-toggle:hover {
+    /*background: linear-gradient(to right top, rgba(255,255,255,0.0) 50%, rgba(255,255,255, 1.0) 50%,rgba(255,255,255, 0.4) 70%);*/
+    /*background-color: white;*/
+    transition: all 200ms;
+    right: -200px;
+    top: -200px;
+    height: 400px;
+    width: 400px;
 }
 
 .curtain{
