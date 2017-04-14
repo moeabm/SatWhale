@@ -166,6 +166,9 @@ label, span{
     width: 100%;
     border-radius: 15px;
 }
+.cPanel.cPanel-full input.presetName{
+
+}
 
 .cPanel.cPanel-full .close-box{
     font-family: 'Glyphicons Halflings';

@@ -61,8 +61,6 @@ router.post('/:id/output/:num', function(req, res, next) {
         }
         else{
             res.send("crosspoint set");
-            device.output = output;
-            device.input = input;
             io.emit('qt_lband', device);
         }
     });

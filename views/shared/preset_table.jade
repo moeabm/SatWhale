@@ -1,9 +1,17 @@
 mixin preset_table(devices)
   div.container.well
-    h3 presets
+    
+    span.col-xs-12
+      h3.col-xs-6 Presets
+      h3.col-xs-3 
+        input.form-control.presetName 
+      h3.col-xs-3 
+        a.btn.btn-primary.savePreset Save
+
     each device in devices
-      table.table.table-striped.table-condensed.table-hover.table-bordered
+      table(value="#{device.id}").table.table-striped.table-condensed.table-hover.table-bordered.preset-table-inner
         tr
+          th Actions
           th Preset name (#{device.name})
           if device.presetable_attributes
             each field in device.presetable_attributes
@@ -11,6 +19,10 @@ mixin preset_table(devices)
         if presets[device.id]
           each preset in presets[device.id]
             tr
+              td 
+                a(name = "#{preset.presetName}").set-preset.glyphicon.glyphicon-arrow-left
+                span &nbsp;
+                a(name = "#{preset.presetName}").delete-preset.glyphicon.glyphicon-trash
               td #{preset.presetName}
               if device.presetable_attributes
                 each field in device.presetable_attributes

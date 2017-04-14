@@ -1,0 +1,54 @@
+{
+    "61 NewsOne": {
+        "panel": "61",
+        "presets": [
+            {
+                "deviceId": "11"
+                "presetName": "ABC NewsOne"
+            },
+            {
+                "deviceId": "45"
+                "presetName": "change qt out3->in14"
+            },
+        ]
+    },
+    "62 NewsOne": {
+        "panel": "62",
+        "presets": [
+            {
+                "deviceId": "22"
+                "presetName": "ABC NewsOne"
+            },
+            {
+                "deviceId": "45"
+                "presetName": "change qt out3->in14"
+            },
+        ]
+    },
+    "63 NewsOne": {
+        "panel": "63",
+        "presets": [
+            {
+                "deviceId": "33"
+                "presetName": "ABC NewsOne"
+            },
+            {
+                "deviceId": "45"
+                "presetName": "change qt out3->in14"
+            },
+        ]
+    },
+    "64 NewsOne": {
+        "panel": "64",
+        "presets": [
+            {
+                "deviceId": "44"
+                "presetName": "ABC NewsOne"
+            },
+            {
+                "deviceId": "45"
+                "presetName": "change qt out3->in14"
+            },
+        ]
+    },
+}

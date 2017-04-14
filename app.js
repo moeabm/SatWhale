@@ -40,6 +40,7 @@ var config = require('./config.json').config;
 var devices = {};
 var panels = config.panels;
 var presets = require('./presets.json');
+var group_presets = require('./groupPresets.json');
 var schedule = require('./schedule.json'); 
 
 
@@ -71,6 +72,7 @@ transferDevicesToPanels(panels);
 app.set('devices', devices);
 app.set('panels', panels);
 app.set('presets', presets);
+app.set('group-presets', group_presets);
 app.set('schedule', schedule);
 
 var preset_scheduler = require('./preset-scheduler')(app);
@@ -80,6 +82,7 @@ app.use('/ird1280s', require('./routes/devices/ird1280'));
 app.use('/ird8200s', require('./routes/devices/ird8200'));
 app.use('/qtlbands', require('./routes/devices/qt_lband'));
 app.use('/presets', require('./routes/presets'));
+app.use('/groupPresets', require('./routes/groupPresets'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

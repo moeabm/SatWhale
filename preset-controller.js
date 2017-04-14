@@ -1,41 +1,48 @@
 "use strict";
 var _ = require('lodash');
 var fs = require('fs');
-var presets = require('./schedule.json'); // array of jobs to schedule
+// var util = require('util');
+var presets = require('./presets.json'); // array of presets
 
-
-var preset_scheduler = function(app) {
+var preset_controller = function(app) {
     var devices = app.get("devices");
     return {
-        addJob: function(job){
-            jobs_config.push(job);
-            scheduledJobs.push(
-                schedule.scheduleJob(job.time, function(){
-                    devices[job.device].callPreset(job.preset);
-                })
-            );
-            fs.writeFile("schedule.json", jobs_config, function(err) {
+        addPreset: function(preset, id, callback){
+            if(!presets[id]) preset[id] = {};
+            var index = presets[id].map(function(e) { return e.presetName; }).indexOf(preset.presetName);
+            if(index < 0 )presets[id].push(preset);
+            else presets[id][index] = preset;
+            fs.writeFile("./presets.json", JSON.stringify(presets, null, 2), function(err) {
                 if(err) {
+                    callback(err);
                     return console.log(err);
                 }
-                console.log("Job config file saved! - job added");
+                callback(null, preset);
+                console.log("presets file saved! - preset added");
             });
         },
-        removeJob: function(job){
-            var index = jobs_config.indexOf(job);
-            scheduledJobs[index].cancel();
-            if (index > -1) {
-                jobs_config.splice(index, 1);
-                scheduledJobs.splice(index, 1);
-            }
-            fs.writeFile("schedule.json", jobs_config, function(err) {
+        removePreset: function(preset, id, callback){
+            if(!presets[id]) return callback("Device with ID "+ id + " does not exist. Cannont remove preset.");
+            var index = presets[id].map(function(e) { return e.presetName; }).indexOf(preset.presetName);
+            if(index < 0 ) return callback("Preset with name "+ preset.presetName + " does not exist. Cannont remove preset.");
+            var removed = presets[id].splice(index, 1);
+            fs.writeFile("./presets.json", JSON.stringify(presets, null, 2), function(err) {
                 if(err) {
+                    callback(err);
                     return console.log(err);
                 }
-                console.log("Job config file saved! - job removed");
+                callback(null, removed);
+                console.log("presets file saved! - preset added");
             });
+        },
+        getPreset: function(name, id,callback){
+            if(!presets[id]) return ("Device with ID "+ id + " does not exist. Cannont get preset.");
+            var index = presets[id].map(function(e) { return e.presetName; }).indexOf(name);
+            if(index < 0 ) return ("Preset with name "+ name + " does not exist. Cannont get preset.");
+            return presets[id][index];
         }
+
     }
 };
 
-module.exports = preset_scheduler;
+module.exports = preset_controller;

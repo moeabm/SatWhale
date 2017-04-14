@@ -70,6 +70,8 @@ var qt_lband = function(options) {
         address: options.address,
         inputs: [],
         outputs: [],
+        input: null,
+        output: null, 
         presetable_attributes: ["input", "output"],
 
         initialize: function(heartbeatFunction, callback){
@@ -124,11 +126,14 @@ var qt_lband = function(options) {
             var commandStr = "S"+pad(output, 3, '0')+pad(input, 3, '0');
             if (isNaN(output) && callback) return callback({error: "Bad output: " + output});
             if (isNaN(input) && callback) return callback({error: "Bad input: " + input});
+            var this_device = this;
             sync.fiber(function(){
                 try{
                     sync.await(getLock(sync.defer()));
                     sync.await(setCommand(commandStr, sync.defer() ) );
                     var varbinds = sync.await(getCommand(sync.defer() ) );
+                    this_device.input = input;
+                    this_device.output = output;
                     releaseLock();
                     if(callback) callback(null, varbinds[0]);
                 }

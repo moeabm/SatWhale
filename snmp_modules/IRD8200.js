@@ -75,6 +75,7 @@ var ird8200 = function(options) {
 
         callPreset: function(presetName, callback){
             var preset = shared.findPreset(presets[this.id], presetName);
+            if(!preset) callback ("Preset Not found: " + presetName);
             var this_device = this;
             var newData = {};
             _.extend(newData, this, preset );
@@ -82,8 +83,13 @@ var ird8200 = function(options) {
                 function(error, data){
                     if(error && callback) callback(error);
                     else{
+                        if(!preset.current_service) return callback(null, data)
+                        console.log("!!!!!!!!SERVICE PRESENT");
                         setTimeout(function(){
-                            this_device.setService(preset.current_service, callback);
+                            this_device.setService(preset.current_service, function(error, service){
+                                if(error && callback) callback(error);
+                                else callback(null, data)
+                            });
                         }, 2000);
                     }
                 }
